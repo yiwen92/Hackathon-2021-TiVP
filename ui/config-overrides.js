@@ -17,6 +17,7 @@ const WebpackBar = require('webpackbar')
 const nodeExternals = require('webpack-node-externals')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const GeneratePackageJsonPlugin = require('generate-package-json-webpack-plugin')
+const { ESBuildPlugin } = require('esbuild-loader')
 
 function isBuildAsLibrary() {
   // Specify by --library
@@ -165,6 +166,31 @@ const ignoreMiniCssExtractOrder = () => (config) => {
   return config
 }
 
+const useEsBuild = () => (config) => {
+  const rules = config.module.rules.find((rule) => Array.isArray(rule.oneOf))
+    .oneOf
+  const jsRule = rules.find(
+    (rule) =>
+      rule.loader &&
+      rule.loader.endsWith('babel-loader/lib/index.js') &&
+      rule.include
+  )
+  if (jsRule) {
+    jsRule.loader = 'esbuild-loader'
+    jsRule.options = {
+      // ...jsRule.options,
+      // All options are optional
+      target: 'es2015', // default, or 'es20XX', 'esnext'
+      jsxFactory: 'React.createElement',
+      jsxFragment: 'React.Fragment',
+      sourceMap: false, // Enable sourcemap
+    }
+    addWebpackPlugin(new ESBuildPlugin())(config)
+  }
+
+  return config
+}
+
 const addWebpackBundleSize = () => (config) => {
   if (isBuildAsDevServer()) {
     return config
@@ -221,5 +247,6 @@ module.exports = override(
   ),
   disableMinimizeByEnv(),
   addDiagnoseReportEntry(),
-  buildAsLibrary()
+  buildAsLibrary(),
+  useEsBuild()
 )
