@@ -1,11 +1,11 @@
 ---
 name: Requirement Request
-about: For formal requirements only. If you have suggestions, please select "Feature
+about:
+  For formal requirements only. If you have suggestions, please select "Feature
   Request".
-title: 'Requirement Request: '
+title: "Requirement Request: "
 labels: status/proposal, type/requirement
-assignees: ''
-
+assignees: ""
 ---
 
 ## Description
@@ -16,18 +16,16 @@ assignees: ''
 
 <!-- REMOVE the items that are not applicable-->
 
-* Feature
-* Stability
-* Performance
-* Usability
-* Security
-* Reliability
+- Feature
+- Stability
+- Performance
+- Usability
+- Security
+- Reliability
 
 ## Value
 
 <!-- Describe the value of this requirement here -->
-
-
 
 <!-- Range: 1~5 -->
 

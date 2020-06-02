@@ -26,10 +26,12 @@ import (
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
+	kvauth "github.com/pingcap-incubator/tidb-dashboard/pkg/utils/kvauth"
 )
 
 var (
@@ -44,7 +46,7 @@ type AuthService struct {
 }
 
 type authenticateForm struct {
-	IsTiDBAuth bool   `json:"is_tidb_auth" binding:"required"`
+	IsTiDBAuth *bool  `json:"is_tidb_auth" binding:"required"`
 	Username   string `json:"username" binding:"required"`
 	Password   string `json:"password"`
 }
@@ -54,34 +56,40 @@ type TokenResponse struct {
 	Expire time.Time `json:"expire"`
 }
 
-func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder) (*utils.SessionUser, error) {
-	// TODO: Support non TiDB auth
-	if !f.IsTiDBAuth {
-		return nil, ErrSignInUnsupportedAuthType.New("unsupported auth type, only TiDB auth is supported")
-	}
-	db, err := tidbForwarder.OpenTiDB(f.Username, f.Password)
-	if err != nil {
-		if errorx.Cast(err) == nil {
-			return nil, ErrSignInOther.WrapWithNoMessage(err)
+func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder, etcdClient *clientv3.Client) (*utils.SessionUser, error) {
+	if !*f.IsTiDBAuth {
+		err := kvauth.VerifyKvAuthAccount(etcdClient, f.Username, f.Password)
+		if err != nil {
+			// Possible errors could be:
+			// kvauth.ErrAccountNotFound
+			// kvauth.ErrPasswordNotMatch
+			return nil, err
 		}
-		// Possible errors could be:
-		// tidb.ErrNoAliveTiDB
-		// tidb.ErrPDAccessFailed
-		// tidb.ErrTiDBConnFailed
-		// tidb.ErrTiDBAuthFailed
-		return nil, err
+	} else {
+		db, err := tidbForwarder.OpenTiDB(f.Username, f.Password)
+		if err != nil {
+			if errorx.Cast(err) == nil {
+				return nil, ErrSignInOther.WrapWithNoMessage(err)
+			}
+			// Possible errors could be:
+			// tidb.ErrNoAliveTiDB
+			// tidb.ErrPDAccessFailed
+			// tidb.ErrTiDBConnFailed
+			// tidb.ErrTiDBAuthFailed
+			return nil, err
+		}
+		defer db.Close() //nolint:errcheck
 	}
-	defer db.Close() //nolint:errcheck
 
 	// TODO: Fill privilege tables here
 	return &utils.SessionUser{
-		IsTiDBAuth:   f.IsTiDBAuth,
+		IsTiDBAuth:   *f.IsTiDBAuth,
 		TiDBUsername: f.Username,
 		TiDBPassword: f.Password,
 	}, nil
 }
 
-func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
+func NewAuthService(tidbForwarder *tidb.Forwarder, etcdClient *clientv3.Client) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -108,7 +116,7 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 			if err := c.ShouldBindJSON(&form); err != nil {
 				return nil, utils.ErrInvalidRequest.WrapWithNoMessage(err)
 			}
-			u, err := form.Authenticate(tidbForwarder)
+			u, err := form.Authenticate(tidbForwarder, etcdClient)
 			if err != nil {
 				return nil, errorx.Decorate(err, "authenticate failed")
 			}
