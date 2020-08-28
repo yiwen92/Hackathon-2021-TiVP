@@ -32,6 +32,7 @@ data_manager:
   partition_type: Partition Type
   partition_expr: Expression
   add_partition: Add Partition
+  delete_partition: Delete Partition
   partitions: Partitions
   partition_value: Value
   number_of_partitions: Number Of Partitions

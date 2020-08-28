@@ -32,6 +32,7 @@ data_manager:
   partition_type: 分区类型
   partition_expr: 表达式
   add_partition: 添加分区
+  delete_partition: 删除分区
   partitions: 分区
   partition_value: 值
   number_of_partitions: 分区数

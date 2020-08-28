@@ -164,6 +164,19 @@ export default function DBTableStructure() {
           })
         }
         break
+      case 'deletePartition':
+        try {
+          await xcClient.dropPartition(db, table, modalInfo.partition)
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
+          })
+        } catch (e) {
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
+          })
+        }
+        break
       default:
         break
     }
@@ -198,6 +211,14 @@ export default function DBTableStructure() {
       type: 'deleteIndex',
       title: `${t('data_manager.delete_index')} ${name}`,
       indexName: name,
+    })()
+  }
+
+  const handleDeletePartition = (name) => () => {
+    showModal({
+      type: 'deletePartition',
+      title: `${t('data_manager.delete_partition')} ${name}`,
+      partition: name,
     })()
   }
 
@@ -404,6 +425,38 @@ export default function DBTableStructure() {
                       key: 'boundaryValue',
                       render: (_: any, record: any) =>
                         record.boundaryValue || 'MAXVALUE',
+                    },
+                    {
+                      title: t('data_manager.view_db.operation'),
+                      key: 'operation',
+                      render: (_: any, record: any) => {
+                        return (
+                          tableInfo?.info.type === xcClient.TableType.TABLE && (
+                            <Dropdown
+                              overlay={
+                                <Menu>
+                                  <Menu.Item>
+                                    <a
+                                      onClick={handleDeletePartition(
+                                        record.name
+                                      )}
+                                    >
+                                      <Typography.Text type="danger">
+                                        {t('data_manager.delete_partition')}
+                                      </Typography.Text>
+                                    </a>
+                                  </Menu.Item>
+                                </Menu>
+                              }
+                            >
+                              <a>
+                                {t('data_manager.view_db.operation')}{' '}
+                                <DownOutlined />
+                              </a>
+                            </Dropdown>
+                          )
+                        )
+                      },
                     },
                   ]}
                 />
@@ -634,6 +687,8 @@ export default function DBTableStructure() {
             `${t('data_manager.confirm_delete_txt')} ${modalInfo.columnName}`}
           {modalInfo.type === 'deleteIndex' &&
             `${t('data_manager.confirm_delete_txt')} ${modalInfo.indexName}`}
+          {modalInfo.type === 'deletePartition' &&
+            `${t('data_manager.confirm_delete_txt')} ${modalInfo.partition}`}
         </Form>
       </Modal>
     </>
