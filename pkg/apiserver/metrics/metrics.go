@@ -11,11 +11,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
@@ -34,6 +37,7 @@ type ServiceParams struct {
 	fx.In
 	HTTPClient *httpc.Client
 	EtcdClient *clientv3.Client
+	LocalStore *dbstore.DB
 }
 
 type Service struct {
@@ -43,6 +47,10 @@ type Service struct {
 
 func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
 	s := &Service{params: p}
+
+	if err := autoMigrate(p.LocalStore); err != nil {
+		log.Fatal("Failed to initialize database", zap.Error(err))
+	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -56,9 +64,15 @@ func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/metrics")
+	endpoint.POST("/alert_webhook", s.alertManagerWebHook)
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/query", s.queryHandler)
 	endpoint.GET("/alerts", s.alertsHandler)
+	endpoint.GET("/alert_channels/list", s.listAlertChannels)
+	endpoint.PUT("/alert_channels/create", s.createAlertChannel)
+	endpoint.GET("/alert_channels/get/:id", s.getAlertChannel)
+	endpoint.POST("/alert_channels/update", s.updateAlertChannel)
+	endpoint.DELETE("/alert_channels/delete/:id", s.deleteAlertChannel)
 }
 
 type QueryRequest struct {
