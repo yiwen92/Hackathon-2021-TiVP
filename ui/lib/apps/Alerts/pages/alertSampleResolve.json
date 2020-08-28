@@ -1,0 +1,54 @@
+{
+  "receiver": "webhook-dashboard",
+  "status": "resolved",
+  "alerts": [
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "TiDB_server_is_down",
+        "cluster": "dashboard_simulate_cluster",
+        "env": "ENV_LABELS_ENV",
+        "expr": "probe_success{group=\"tidb\"} == 0",
+        "group": "tidb",
+        "instance": "172.16.4.125:10082",
+        "job": "tidb_port_probe",
+        "level": "emergency",
+        "monitor": "prometheus"
+      },
+      "annotations": {
+        "description": "cluster: ENV_LABELS_ENV, instance: 172.16.4.125:10082",
+        "summary": "TiDB server is down",
+        "value": "0"
+      },
+      "startsAt": "2020-08-28T12:15:04.491156577Z",
+      "endsAt": "2020-08-28T12:20:04.491156577Z",
+      "generatorURL": "http://172.16.4.125:9190/graph?g0.expr=probe_success%7Bgroup%3D%22tidb%22%7D+%3D%3D+0&g0.tab=1"
+    }
+  ],
+  "groupLabels": {
+    "alertname": "TiDB_server_is_down",
+    "env": "ENV_LABELS_ENV",
+    "group": "tidb",
+    "instance": "172.16.4.125:10082",
+    "job": "tidb_port_probe"
+  },
+  "commonLabels": {
+    "alertname": "TiDB_server_is_down",
+    "cluster": "dashboard_simulate_cluster",
+    "env": "ENV_LABELS_ENV",
+    "expr": "probe_success{group=\"tidb\"} == 0",
+    "group": "tidb",
+    "instance": "172.16.4.125:10082",
+    "job": "tidb_port_probe",
+    "level": "emergency",
+    "monitor": "prometheus"
+  },
+  "commonAnnotations": {
+    "description": "cluster: ENV_LABELS_ENV, instance: 172.16.4.125:10082",
+    "summary": "TiDB server is down",
+    "value": "0"
+  },
+  "externalURL": "http://ubuntu:9193",
+  "version": "4",
+  "groupKey": "{}:{alertname=\"TiDB_server_is_down\", env=\"ENV_LABELS_ENV\", group=\"tidb\", instance=\"172.16.4.125:10082\", job=\"tidb_port_probe\"}"
+}

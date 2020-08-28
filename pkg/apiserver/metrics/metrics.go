@@ -37,7 +37,7 @@ type ServiceParams struct {
 	fx.In
 	HTTPClient *httpc.Client
 	EtcdClient *clientv3.Client
-	db         *dbstore.DB
+	LocalStore *dbstore.DB
 }
 
 type Service struct {
@@ -48,7 +48,7 @@ type Service struct {
 func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
 	s := &Service{params: p}
 
-	if err := autoMigrate(p.db); err != nil {
+	if err := autoMigrate(p.LocalStore); err != nil {
 		log.Fatal("Failed to initialize database", zap.Error(err))
 	}
 
@@ -64,9 +64,15 @@ func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/metrics")
+	endpoint.POST("/alert_webhook", s.alertManagerWebHook)
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/query", s.queryHandler)
 	endpoint.GET("/alerts", s.alertsHandler)
+	endpoint.GET("/alert_channels/list", s.listAlertChannels)
+	endpoint.PUT("/alert_channels/create", s.createAlertChannel)
+	endpoint.GET("/alert_channels/get/:id", s.getAlertChannel)
+	endpoint.POST("/alert_channels/update", s.updateAlertChannel)
+	endpoint.DELETE("/alert_channels/delete/:id", s.deleteAlertChannel)
 }
 
 type QueryRequest struct {

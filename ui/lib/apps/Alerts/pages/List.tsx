@@ -18,6 +18,7 @@ import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import styles from './List.module.less'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 const levelToOrder = {
   emergency: 3,
@@ -27,6 +28,7 @@ const levelToOrder = {
 
 export default function () {
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const { data, isLoading, sendRequest } = useClientRequest((cancelToken) => {
     return client.getInstance().metricsGetAlerts({ cancelToken })
@@ -38,7 +40,7 @@ export default function () {
 
   const handleAlertManagerLinkClick = useCallback(() => {
     if (amData) {
-      window.location.href = `http://${amData.ip}:${amData.port}`
+      window.open(`http://${amData.ip}:${amData.port}`)
     }
   }, [amData])
 
@@ -138,7 +140,7 @@ export default function () {
           <div style={{ display: 'flow-root' }}>
             <Card>
               <Space>
-                <Button>
+                <Button onClick={() => navigate(`/alerts/channels`)}>
                   <ApiOutlined /> {t('alerts.toolbar.channels')}
                 </Button>
                 <Button onClick={handleAlertManagerLinkClick}>

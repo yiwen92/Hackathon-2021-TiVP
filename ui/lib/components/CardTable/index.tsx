@@ -123,6 +123,7 @@ function dummyColumn(): IColumn {
     minWidth: 28,
     maxWidth: 28,
     onRender: (_rec) => null,
+    columnActionsMode: ColumnActionsMode.disabled,
   }
 }
 
