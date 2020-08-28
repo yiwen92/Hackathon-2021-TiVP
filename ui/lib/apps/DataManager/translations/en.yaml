@@ -83,8 +83,10 @@ data_manager:
     insert_row: Insert Row
     edit_row: Edit Row
     delete_row: Delete Row
+    delete_row_confirm_txt: Confirm to delete this row?
     is_empty_warning: Can not be empty
     pagination_tips: This table only display {{ allRowsBeforeTruncation }} rows, can use SQL statement to query more
+    uneditable_warning: This table cannot be edited from UI, please use SQL statement
 
   export_database_short: Export
   export_database: Export this database as CSV file

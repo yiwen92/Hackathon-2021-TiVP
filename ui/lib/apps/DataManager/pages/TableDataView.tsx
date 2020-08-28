@@ -48,6 +48,7 @@ export default function TableDataView() {
         setFormModalVisible(true)
         break
       case 'deleteRow':
+      case 'uneditable':
         setConfirmModalVisible(true)
         break
       default:
@@ -63,8 +64,14 @@ export default function TableDataView() {
         title={modalInfo.title}
         visible={confirmModalVisible}
         onCancel={onCancel}
-        onOk={() => handleDeleteTableRow(modalInfo.rowInfo)}
-      ></Modal>
+        onOk={
+          modalInfo.type === 'deleteRow'
+            ? () => handleDeleteTableRow(modalInfo.rowInfo)
+            : onCancel
+        }
+      >
+        <p>{modalInfo.message}</p>
+      </Modal>
     )
   }
 
@@ -89,7 +96,11 @@ export default function TableDataView() {
           <Form.Item
             name={`checkbox-${name}-${index}`}
             valuePropName="checked"
-            initialValue={modalInfo.rowInfo[index] ? false : true}
+            initialValue={
+              modalInfo.type === 'insertRow' || modalInfo.rowInfo[index]
+                ? false
+                : true
+            }
           >
             <Checkbox disabled={isNotNull ? true : false} />
           </Form.Item>
@@ -374,6 +385,7 @@ export default function TableDataView() {
             onClick={showFormModal({
               type: 'insertRow',
               title: t('data_manager.select_table.insert_row'),
+              rowInfo: [],
             })}
           >
             <TableOutlined />
@@ -402,23 +414,53 @@ export default function TableDataView() {
                     render: (row) => (
                       <>
                         <a
-                          onClick={showFormModal({
-                            title: t('data_manager.select_table.edit_row'),
-                            type: 'editRow',
-                            message: '',
-                            rowInfo: row,
-                          })}
+                          onClick={
+                            tableInfo.isUpdatable
+                              ? showFormModal({
+                                  title: t(
+                                    'data_manager.select_table.edit_row'
+                                  ),
+                                  type: 'editRow',
+                                  message: '',
+                                  rowInfo: row,
+                                })
+                              : showFormModal({
+                                  title: t(
+                                    'data_manager.select_table.edit_row'
+                                  ),
+                                  type: 'uneditable',
+                                  message: t(
+                                    'data_manager.select_table.uneditable_warning'
+                                  ),
+                                })
+                          }
                         >
                           {t('dbusers_manager.edit')}
                         </a>
                         <Divider type="vertical" />
                         <a
-                          onClick={showFormModal({
-                            title: t('data_manager.select_table.delete_row'),
-                            type: 'deleteRow',
-                            message: '',
-                            rowInfo: row,
-                          })}
+                          onClick={
+                            tableInfo.isUpdatable
+                              ? showFormModal({
+                                  title: t(
+                                    'data_manager.select_table.delete_row'
+                                  ),
+                                  type: 'deleteRow',
+                                  message: t(
+                                    'data_manager.select_table.delete_row_confirm_txt'
+                                  ),
+                                  rowInfo: row,
+                                })
+                              : showFormModal({
+                                  title: t(
+                                    'data_manager.select_table.delete_row'
+                                  ),
+                                  type: 'uneditable',
+                                  message: t(
+                                    'data_manager.select_table.uneditable_warning'
+                                  ),
+                                })
+                          }
                         >
                           <Typography.Text type="danger">
                             {t('data_manager.delete')}
