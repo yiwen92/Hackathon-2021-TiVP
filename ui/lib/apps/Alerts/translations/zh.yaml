@@ -1,10 +1,11 @@
 alerts:
   nav_title: 告警
   toolbar:
+    channels: 配置告警通道
     config: 配置后台告警静默
     refresh: 刷新
   column:
-    pending: 该项即将触发报警
+    pending: 该项即将触发告警
     level: 等级
     name: 名称
     instances: 告警实例

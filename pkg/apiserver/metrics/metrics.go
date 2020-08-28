@@ -11,11 +11,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
@@ -34,6 +37,7 @@ type ServiceParams struct {
 	fx.In
 	HTTPClient *httpc.Client
 	EtcdClient *clientv3.Client
+	db         *dbstore.DB
 }
 
 type Service struct {
@@ -43,6 +47,10 @@ type Service struct {
 
 func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
 	s := &Service{params: p}
+
+	if err := autoMigrate(p.db); err != nil {
+		log.Fatal("Failed to initialize database", zap.Error(err))
+	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

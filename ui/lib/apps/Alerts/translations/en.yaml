@@ -1,6 +1,7 @@
 alerts:
   nav_title: Alerts
   toolbar:
+    channels: Configure Alert Channels
     config: Configure Silences
     refresh: Refresh
   column:
