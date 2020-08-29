@@ -19,7 +19,7 @@ import {
   Table,
   Typography,
 } from 'antd'
-import { Card, Head, Pre } from '@lib/components'
+import { Card, Head, Pre, AnimatedSkeleton } from '@lib/components'
 import React, { useEffect, useState } from 'react'
 
 import { useNavigate } from 'react-router-dom'
@@ -94,6 +94,7 @@ export default function DBTableList() {
 
   const [form] = Form.useForm()
 
+  const [isLoading, setIsLoading] = useState(false)
   const [tables, setTables] = useState<xcClient.TableInfo[]>()
   const [visible, setVisible] = useState(false)
   const [modalInfo, setModalInfo] = useState<any>({
@@ -101,8 +102,14 @@ export default function DBTableList() {
     title: '',
   })
 
-  const fetchTables = async () =>
-    setTables((await xcClient.getTables(db)).tables)
+  const fetchTables = async () => {
+    setIsLoading(true)
+    try {
+      setTables((await xcClient.getTables(db)).tables)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
     fetchTables()
@@ -217,92 +224,96 @@ export default function DBTableList() {
         }
       />
       <Card>
-        {tables && (
-          <Table
-            dataSource={tables}
-            rowKey="name"
-            columns={[
-              {
-                title: t('data_manager.view_db.name'),
-                dataIndex: 'name',
-                key: 'name',
-                render: (name) => {
-                  return (
-                    <a href={`#/data/view?db=${db}&table=${name}`}>{name}</a>
-                  )
+        <AnimatedSkeleton
+          showSkeleton={isLoading && (!tables || tables.length === 0)}
+        >
+          {tables && (
+            <Table
+              dataSource={tables}
+              rowKey="name"
+              columns={[
+                {
+                  title: t('data_manager.view_db.name'),
+                  dataIndex: 'name',
+                  key: 'name',
+                  render: (name) => {
+                    return (
+                      <a href={`#/data/view?db=${db}&table=${name}`}>{name}</a>
+                    )
+                  },
                 },
-              },
-              {
-                title: t('data_manager.view_db.type'),
-                dataIndex: 'type',
-                key: 'type',
-              },
-              {
-                title: t('data_manager.view_db.comment'),
-                dataIndex: 'comment',
-                key: 'comment',
-              },
-              {
-                title: t('data_manager.view_db.operation'),
-                key: 'operation',
-                render: (_: any, record: any) => {
-                  return (
-                    <Dropdown
-                      overlay={
-                        <Menu>
-                          <Menu.Item>
-                            <a
-                              href={`#/data/table_structure?db=${db}&table=${record.name}`}
-                            >
-                              {t('data_manager.view_db.op_structure')}
-                            </a>
-                          </Menu.Item>
-                          <Menu.Item>
-                            <a
-                              href={`#/data/export?db=${db}&table=${record.name}`}
-                            >
-                              {t('data_manager.view_db.op_export')}
-                            </a>
-                          </Menu.Item>
-                          <Menu.Divider />
-                          {record.type !== xcClient.TableType.SYSTEM_VIEW && (
-                            <Menu.Item>
-                              <a onClick={handleEditTable(record.name)}>
-                                {t('data_manager.view_db.op_rename')}
-                              </a>
-                            </Menu.Item>
-                          )}
-                          {record.type === xcClient.TableType.TABLE && (
-                            <Menu.Item>
-                              <a onClick={handleDeleteTable(record.name)}>
-                                <Typography.Text type="danger">
-                                  {t('data_manager.view_db.op_drop')}
-                                </Typography.Text>
-                              </a>
-                            </Menu.Item>
-                          )}
-                          {record.type === xcClient.TableType.VIEW && (
-                            <Menu.Item>
-                              <a onClick={handleDeleteView(record.name)}>
-                                <Typography.Text type="danger">
-                                  {t('data_manager.view_db.op_drop_view')}
-                                </Typography.Text>
-                              </a>
-                            </Menu.Item>
-                          )}
-                        </Menu>
-                      }
-                    >
-                      <a>
-                        {t('data_manager.view_db.operation')} <DownOutlined />
-                      </a>
-                    </Dropdown>
-                  )
+                {
+                  title: t('data_manager.view_db.type'),
+                  dataIndex: 'type',
+                  key: 'type',
                 },
-              },
-            ]}
-          />
-        )}
+                {
+                  title: t('data_manager.view_db.comment'),
+                  dataIndex: 'comment',
+                  key: 'comment',
+                },
+                {
+                  title: t('data_manager.view_db.operation'),
+                  key: 'operation',
+                  render: (_: any, record: any) => {
+                    return (
+                      <Dropdown
+                        overlay={
+                          <Menu>
+                            <Menu.Item>
+                              <a
+                                href={`#/data/table_structure?db=${db}&table=${record.name}`}
+                              >
+                                {t('data_manager.view_db.op_structure')}
+                              </a>
+                            </Menu.Item>
+                            <Menu.Item>
+                              <a
+                                href={`#/data/export?db=${db}&table=${record.name}`}
+                              >
+                                {t('data_manager.view_db.op_export')}
+                              </a>
+                            </Menu.Item>
+                            <Menu.Divider />
+                            {record.type !== xcClient.TableType.SYSTEM_VIEW && (
+                              <Menu.Item>
+                                <a onClick={handleEditTable(record.name)}>
+                                  {t('data_manager.view_db.op_rename')}
+                                </a>
+                              </Menu.Item>
+                            )}
+                            {record.type === xcClient.TableType.TABLE && (
+                              <Menu.Item>
+                                <a onClick={handleDeleteTable(record.name)}>
+                                  <Typography.Text type="danger">
+                                    {t('data_manager.view_db.op_drop')}
+                                  </Typography.Text>
+                                </a>
+                              </Menu.Item>
+                            )}
+                            {record.type === xcClient.TableType.VIEW && (
+                              <Menu.Item>
+                                <a onClick={handleDeleteView(record.name)}>
+                                  <Typography.Text type="danger">
+                                    {t('data_manager.view_db.op_drop_view')}
+                                  </Typography.Text>
+                                </a>
+                              </Menu.Item>
+                            )}
+                          </Menu>
+                        }
+                      >
+                        <a>
+                          {t('data_manager.view_db.operation')} <DownOutlined />
+                        </a>
+                      </Dropdown>
+                    )
+                  },
+                },
+              ]}
+            />
+          )}
+        </AnimatedSkeleton>
       </Card>
       <Modal
         visible={visible}

@@ -8,7 +8,7 @@ import styles from './index.module.less'
 export interface IDescriptionsProps {
   className?: string
   children?:
-    | (React.ReactElement<IDescriptionsItemProps> | null | undefined)[]
+    | (React.ReactElement<IDescriptionsItemProps> | null | undefined | false)[]
     | React.ReactElement<IDescriptionsItemProps>
   column?: number
 }
@@ -44,7 +44,9 @@ function Descriptions({
   let realChildren
   if (children) {
     if (Array.isArray(children)) {
-      realChildren = children.filter((v) => v != null).map((v) => mapItem(v!))
+      realChildren = children
+        .filter((v) => v != null && v != false)
+        .map((v) => mapItem(v! as any))
     } else {
       realChildren = mapItem(children)
     }

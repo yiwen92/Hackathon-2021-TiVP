@@ -7,11 +7,11 @@ import {
   DownOutlined,
   MinusSquareTwoTone,
   PlusOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons'
 import {
   Button,
   Checkbox,
-  Descriptions,
   Dropdown,
   Form,
   Input,
@@ -22,7 +22,13 @@ import {
   Table,
   Typography,
 } from 'antd'
-import { Card, Head, Pre } from '@lib/components'
+import {
+  Card,
+  Head,
+  Pre,
+  AnimatedSkeleton,
+  Descriptions,
+} from '@lib/components'
 import React, { useEffect, useState } from 'react'
 
 import { parseColumnRelatedValues } from '@lib/utils/xcClient/util'
@@ -42,14 +48,22 @@ export default function DBTableStructure() {
   const [form] = Form.useForm()
 
   const [tableInfo, setTableInfo] = useState<xcClient.GetTableInfoResult>()
+  const [isLoading, setIsLoading] = useState(false)
+
   const [visible, setVisible] = useState(false)
   const [modalInfo, setModalInfo] = useState<any>({
     type: '',
     title: '',
   })
 
-  const fetchTableInfo = async () =>
-    setTableInfo(await xcClient.getTableInfo(db, table))
+  const fetchTableInfo = async () => {
+    setIsLoading(true)
+    try {
+      setTableInfo(await xcClient.getTableInfo(db, table))
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
     fetchTableInfo()
@@ -77,6 +91,9 @@ export default function DBTableStructure() {
           await xcClient.addTableColumnAtHead(db, table, _values)
           Modal.success({
             content: t('data_manager.create_success_txt'),
+            onOk: () => {
+              fetchTableInfo()
+            },
           })
         } catch (e) {
           Modal.error({
@@ -91,6 +108,9 @@ export default function DBTableStructure() {
           await xcClient.addTableColumnAtTail(db, table, _values)
           Modal.success({
             content: t('data_manager.create_success_txt'),
+            onOk: () => {
+              fetchTableInfo()
+            },
           })
         } catch (e) {
           Modal.error({
@@ -110,24 +130,13 @@ export default function DBTableStructure() {
           )
           Modal.success({
             content: t('data_manager.create_success_txt'),
+            onOk: () => {
+              fetchTableInfo()
+            },
           })
         } catch (e) {
           Modal.error({
             title: t('data_manager.create_failed_txt'),
-            content: <Pre>{e.message}</Pre>,
-          })
-          return
-        }
-        break
-      case 'deleteColumn':
-        try {
-          await xcClient.dropTableColumn(db, table, modalInfo.columnName)
-          Modal.success({
-            content: t('data_manager.delete_success_txt'),
-          })
-        } catch (e) {
-          Modal.error({
-            title: t('data_manager.delete_failed_txt'),
             content: <Pre>{e.message}</Pre>,
           })
           return
@@ -146,6 +155,9 @@ export default function DBTableStructure() {
           await xcClient.addTableIndex(db, table, values)
           Modal.success({
             content: t('data_manager.create_success_txt'),
+            onOk: () => {
+              fetchTableInfo()
+            },
           })
         } catch (e) {
           Modal.error({
@@ -155,39 +167,8 @@ export default function DBTableStructure() {
           return
         }
         break
-      case 'deleteIndex':
-        try {
-          await xcClient.dropTableIndex(db, table, modalInfo.indexName)
-          Modal.success({
-            content: t('data_manager.delete_success_txt'),
-          })
-        } catch (e) {
-          Modal.error({
-            title: t('data_manager.delete_failed_txt'),
-            content: <Pre>{e.message}</Pre>,
-          })
-          return
-        }
-        break
-      case 'deletePartition':
-        try {
-          await xcClient.dropPartition(db, table, modalInfo.partition)
-          Modal.success({
-            content: t('data_manager.delete_success_txt'),
-          })
-        } catch (e) {
-          Modal.error({
-            title: t('data_manager.delete_failed_txt'),
-            content: <Pre>{e.message}</Pre>,
-          })
-          return
-        }
-        break
-      default:
-        break
     }
 
-    setTimeout(fetchTableInfo, 1000)
     handleCancel()
   }
 
@@ -197,11 +178,26 @@ export default function DBTableStructure() {
   }
 
   const handleDeleteColumn = (name) => () => {
-    showModal({
-      type: 'deleteColumn',
-      title: `${t('data_manager.delete_column')} ${name}`,
-      columnName: name,
-    })()
+    Modal.confirm({
+      icon: <ExclamationCircleOutlined />,
+      content: `${t('data_manager.confirm_delete_txt')} ${name}`,
+      onOk: async () => {
+        try {
+          await xcClient.dropTableColumn(db, table, name)
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
+            onOk: () => {
+              fetchTableInfo()
+            },
+          })
+        } catch (e) {
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
+          })
+        }
+      },
+    })
   }
 
   const handleAddColumnAfter = (name) => () => {
@@ -213,19 +209,49 @@ export default function DBTableStructure() {
   }
 
   const handleDeleteIndex = (name) => () => {
-    showModal({
-      type: 'deleteIndex',
-      title: `${t('data_manager.delete_index')} ${name}`,
-      indexName: name,
-    })()
+    Modal.confirm({
+      icon: <ExclamationCircleOutlined />,
+      content: `${t('data_manager.confirm_delete_txt')} ${name}`,
+      onOk: async () => {
+        try {
+          await xcClient.dropTableIndex(db, table, name)
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
+            onOk: () => {
+              fetchTableInfo()
+            },
+          })
+        } catch (e) {
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
+          })
+        }
+      },
+    })
   }
 
   const handleDeletePartition = (name) => () => {
-    showModal({
-      type: 'deletePartition',
-      title: `${t('data_manager.delete_partition')} ${name}`,
-      partition: name,
-    })()
+    Modal.confirm({
+      icon: <ExclamationCircleOutlined />,
+      content: `${t('data_manager.confirm_delete_txt')} ${name}`,
+      onOk: async () => {
+        try {
+          await xcClient.dropPartition(db, table, name)
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
+            onOk: () => {
+              fetchTableInfo()
+            },
+          })
+        } catch (e) {
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
+          })
+        }
+      },
+    })
   }
 
   return (
@@ -270,78 +296,82 @@ export default function DBTableStructure() {
           )
         }
       >
-        {tableInfo && (
-          <Table
-            dataSource={tableInfo.columns}
-            rowKey="name"
-            columns={[
-              {
-                title: t('data_manager.name'),
-                dataIndex: 'name',
-                key: 'name',
-              },
-              {
-                title: t('data_manager.field_type'),
-                dataIndex: 'fieldType',
-                key: 'fieldType',
-              },
-              {
-                title: t('data_manager.not_null'),
-                dataIndex: 'isNotNull',
-                key: 'isNotNull',
-                render: (v) => {
-                  if (v) {
-                    return <CheckOutlined />
-                  } else {
-                    return ''
-                  }
+        <AnimatedSkeleton showSkeleton={!tableInfo && isLoading}>
+          {tableInfo && (
+            <Table
+              pagination={false}
+              dataSource={tableInfo.columns}
+              rowKey="name"
+              columns={[
+                {
+                  title: t('data_manager.name'),
+                  dataIndex: 'name',
+                  key: 'name',
                 },
-              },
-              {
-                title: t('data_manager.default_value'),
-                dataIndex: 'defaultValue',
-                key: 'defaultValue',
-              },
-              {
-                title: t('data_manager.comment'),
-                dataIndex: 'comment',
-                key: 'comment',
-              },
-              {
-                title: t('data_manager.view_db.operation'),
-                key: 'operation',
-                render: (_: any, record: any) => {
-                  return (
-                    tableInfo?.info.type === xcClient.TableType.TABLE && (
-                      <Dropdown
-                        overlay={
-                          <Menu>
-                            <Menu.Item>
-                              <a onClick={handleAddColumnAfter(record.name)}>
-                                {t('data_manager.db_structure.op_insert')}
-                              </a>
-                            </Menu.Item>
-                            <Menu.Item>
-                              <a onClick={handleDeleteColumn(record.name)}>
-                                <Typography.Text type="danger">
-                                  {t('data_manager.db_structure.op_drop')}
-                                </Typography.Text>
-                              </a>
-                            </Menu.Item>
-                          </Menu>
-                        }
-                      >
-                        <a>
-                          {t('data_manager.view_db.operation')} <DownOutlined />
-                        </a>
-                      </Dropdown>
+                {
+                  title: t('data_manager.field_type'),
+                  dataIndex: 'fieldType',
+                  key: 'fieldType',
+                },
+                {
+                  title: t('data_manager.not_null'),
+                  dataIndex: 'isNotNull',
+                  key: 'isNotNull',
+                  render: (v) => {
+                    if (v) {
+                      return <CheckOutlined />
+                    } else {
+                      return ''
+                    }
+                  },
+                },
+                {
+                  title: t('data_manager.default_value'),
+                  dataIndex: 'defaultValue',
+                  key: 'defaultValue',
+                },
+                {
+                  title: t('data_manager.comment'),
+                  dataIndex: 'comment',
+                  key: 'comment',
+                },
+                {
+                  title: t('data_manager.view_db.operation'),
+                  key: 'operation',
+                  render: (_: any, record: any) => {
+                    return (
+                      tableInfo?.info.type === xcClient.TableType.TABLE && (
+                        <Dropdown
+                          overlay={
+                            <Menu>
+                              <Menu.Item>
+                                <a onClick={handleAddColumnAfter(record.name)}>
+                                  {t('data_manager.db_structure.op_insert')}
+                                </a>
+                              </Menu.Item>
+                              <Menu.Item>
+                                <a onClick={handleDeleteColumn(record.name)}>
+                                  <Typography.Text type="danger">
+                                    {t('data_manager.db_structure.op_drop')}
+                                  </Typography.Text>
+                                </a>
+                              </Menu.Item>
+                            </Menu>
+                          }
+                        >
+                          <a>
+                            {t('data_manager.view_db.operation')}{' '}
+                            <DownOutlined />
+                          </a>
+                        </Dropdown>
+                      )
                     )
-                  )
+                  },
                 },
-              },
-            ]}
-          />
-        )}
+              ]}
+            />
+          )}
+        </AnimatedSkeleton>
       </Card>
       {tableInfo?.info.type !== xcClient.TableType.VIEW && (
         <Card
@@ -362,62 +392,66 @@ export default function DBTableStructure() {
             )
           }
         >
-          {tableInfo && (
-            <Table
-              dataSource={tableInfo.indexes.map((d, i) => ({
-                ...{ key: d.name + i },
-                ...d,
-                ...{ columns: d.columns.join(', ') },
-              }))}
-              columns={[
-                {
-                  title: t('data_manager.name'),
-                  dataIndex: 'name',
-                  key: 'name',
-                },
-                {
-                  title: 'Type',
-                  dataIndex: 'type',
-                  key: 'type',
-                  render: (_: any, record: any) =>
-                    xcClient.TableInfoIndexType[record.type],
-                },
-                {
-                  title: t('data_manager.columns'),
-                  dataIndex: 'columns',
-                  key: 'columns',
-                },
-                {
-                  title: t('data_manager.delete'),
-                  key: 'isDeleteble',
-                  render: (_: any, record: any) => (
-                    <Button
-                      type="link"
-                      danger
-                      disabled={!record.isDeleteble}
-                      icon={<CloseSquareOutlined />}
-                      onClick={handleDeleteIndex(record.name)}
-                    />
-                  ),
-                },
-              ]}
-            />
-          )}
+          <AnimatedSkeleton showSkeleton={!tableInfo && isLoading}>
+            {tableInfo && (
+              <Table
+                pagination={false}
+                dataSource={tableInfo.indexes.map((d, i) => ({
+                  ...{ key: d.name + i },
+                  ...d,
+                  ...{ columns: d.columns.join(', ') },
+                }))}
+                columns={[
+                  {
+                    title: t('data_manager.name'),
+                    dataIndex: 'name',
+                    key: 'name',
+                  },
+                  {
+                    title: 'Type',
+                    dataIndex: 'type',
+                    key: 'type',
+                    render: (_: any, record: any) =>
+                      xcClient.TableInfoIndexType[record.type],
+                  },
+                  {
+                    title: t('data_manager.columns'),
+                    dataIndex: 'columns',
+                    key: 'columns',
+                  },
+                  {
+                    title: t('data_manager.delete'),
+                    key: 'isDeleteble',
+                    render: (_: any, record: any) => (
+                      <Button
+                        type="link"
+                        danger
+                        disabled={!record.isDeleteble}
+                        icon={<CloseSquareOutlined />}
+                        onClick={handleDeleteIndex(record.name)}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            )}
+          </AnimatedSkeleton>
         </Card>
       )}
 
       {tableInfo?.partition && (
         <Card title={t('data_manager.partition_table')}>
-          <Descriptions layout="vertical" bordered>
+          <Descriptions column={1}>
             <Descriptions.Item label={t('data_manager.partition_type')}>
               {tableInfo.partition.type}
             </Descriptions.Item>
             <Descriptions.Item label={t('data_manager.partition_expr')}>
-              {tableInfo.partition.expr}
+              <Pre>{tableInfo.partition.expr}</Pre>
             </Descriptions.Item>
             {tableInfo.partition.type === xcClient.PartitionType.RANGE && (
               <Descriptions.Item label={t('data_manager.partitions')}>
                 <Table
+                  pagination={false}
                   dataSource={tableInfo.partition.partitions}
                   columns={[
                     {
@@ -476,6 +510,7 @@ export default function DBTableStructure() {
             {tableInfo.partition.type === xcClient.PartitionType.LIST && (
               <Descriptions.Item label={t('data_manager.partitions')}>
                 <Table
+                  pagination={false}
                   dataSource={tableInfo.partition.partitions}
                   columns={[
                     {
@@ -676,12 +711,6 @@ export default function DBTableStructure() {
               </Form.List>
             </>
           )}
-          {modalInfo.type === 'deleteColumn' &&
-            `${t('data_manager.confirm_delete_txt')} ${modalInfo.columnName}`}
-          {modalInfo.type === 'deleteIndex' &&
-            `${t('data_manager.confirm_delete_txt')} ${modalInfo.indexName}`}
-          {modalInfo.type === 'deletePartition' &&
-            `${t('data_manager.confirm_delete_txt')} ${modalInfo.partition}`}
         </Form>
       </Modal>
     </>

@@ -11,21 +11,28 @@ import {
   Dropdown,
   Menu,
 } from 'antd'
-import { Card, Pre, Head } from '@lib/components'
+import { Card, Pre, Head, AnimatedSkeleton } from '@lib/components'
 import { useTranslation } from 'react-i18next'
 import { DatabaseOutlined, DownOutlined } from '@ant-design/icons'
 
 // route: /data
 export default function DatabaseList() {
   const [dbList, setDbList] = useState<Object[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+
   const [createModalVisible, setCreateModalVisible] = useState(false)
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [deleteDBName, setDeleteDBName] = useState('')
   const { t } = useTranslation()
 
   async function fetchDatabaseList() {
-    const result = (await Database.getDatabases()).databases
-    setDbList(result)
+    setIsLoading(true)
+    try {
+      const result = (await Database.getDatabases()).databases
+      setDbList(result)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -189,13 +196,17 @@ export default function DatabaseList() {
       <Card>
         <DeleteDBModal />
         <CreateDBModal />
-        <Table
-          dataSource={dbList.map((db, i) => ({
-            ...{ key: i },
-            ...{ database_name: db },
-          }))}
-          columns={columns}
-        />
+        <AnimatedSkeleton
+          showSkeleton={isLoading && (!dbList || dbList.length === 0)}
+        >
+          <Table
+            dataSource={dbList.map((db, i) => ({
+              ...{ key: i },
+              ...{ database_name: db },
+            }))}
+            columns={columns}
+          />
+        </AnimatedSkeleton>
       </Card>
     </>
   )
