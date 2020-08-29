@@ -83,6 +83,7 @@ export default function DBTableStructure() {
             title: t('data_manager.create_failed_txt'),
             content: <Pre>{e.message}</Pre>,
           })
+          return
         }
         break
       case 'insertColumnAtTail':
@@ -96,6 +97,7 @@ export default function DBTableStructure() {
             title: t('data_manager.create_failed_txt'),
             content: <Pre>{e.message}</Pre>,
           })
+          return
         }
         break
       case 'addColumnAfter':
@@ -114,6 +116,7 @@ export default function DBTableStructure() {
             title: t('data_manager.create_failed_txt'),
             content: <Pre>{e.message}</Pre>,
           })
+          return
         }
         break
       case 'deleteColumn':
@@ -127,10 +130,11 @@ export default function DBTableStructure() {
             title: t('data_manager.delete_failed_txt'),
             content: <Pre>{e.message}</Pre>,
           })
+          return
         }
         break
       case 'addIndex':
-        if (!values.columns) {
+        if (!values.columns || values.columns.length === 0) {
           Modal.error({
             content: `${t('data_manager.please_input')}${t(
               'data_manager.columns'
@@ -138,7 +142,6 @@ export default function DBTableStructure() {
           })
           return
         }
-
         try {
           await xcClient.addTableIndex(db, table, values)
           Modal.success({
@@ -149,6 +152,7 @@ export default function DBTableStructure() {
             title: t('data_manager.create_failed_txt'),
             content: <Pre>{e.message}</Pre>,
           })
+          return
         }
         break
       case 'deleteIndex':
@@ -162,6 +166,7 @@ export default function DBTableStructure() {
             title: t('data_manager.delete_failed_txt'),
             content: <Pre>{e.message}</Pre>,
           })
+          return
         }
         break
       case 'deletePartition':
@@ -175,6 +180,7 @@ export default function DBTableStructure() {
             title: t('data_manager.delete_failed_txt'),
             content: <Pre>{e.message}</Pre>,
           })
+          return
         }
         break
       default:
@@ -493,18 +499,11 @@ export default function DBTableStructure() {
       <Modal
         visible={visible}
         title={modalInfo.title}
-        width={1024}
+        width={700}
         onOk={form.submit}
         onCancel={handleCancel}
       >
-        <Form
-          form={form}
-          {...{
-            labelCol: { span: 4 },
-            wrapperCol: { span: 20 },
-          }}
-          onFinish={handleOk}
-        >
+        <Form form={form} onFinish={handleOk} layout="vertical">
           {(modalInfo.type === 'insertColumnAtHead' ||
             modalInfo.type === 'insertColumnAtTail' ||
             modalInfo.type === 'addColumnAfter') && (
@@ -514,10 +513,10 @@ export default function DBTableStructure() {
                 name="name"
                 rules={[{ required: true }]}
               >
-                <Input />
+                <Input style={{ maxWidth: 300 }} />
               </Form.Item>
               <Form.Item label={t('data_manager.field_type')}>
-                <Space style={{ display: 'flex', alignItems: 'center' }}>
+                <Space>
                   <Form.Item
                     name="typeName"
                     rules={[
@@ -528,6 +527,7 @@ export default function DBTableStructure() {
                         )}`,
                       },
                     ]}
+                    noStyle
                   >
                     <Select
                       style={{ width: 150 }}
@@ -540,26 +540,26 @@ export default function DBTableStructure() {
                       ))}
                     </Select>
                   </Form.Item>
-
-                  <Form.Item name="length">
+                  <Form.Item name="length" noStyle>
                     <Input
                       type="number"
                       placeholder={t('data_manager.length')}
                     />
                   </Form.Item>
-
-                  <Form.Item name="decimals">
+                  <Form.Item name="decimals" noStyle>
                     <Input
                       type="number"
                       placeholder={t('data_manager.decimal')}
                     />
                   </Form.Item>
-
-                  <Form.Item name="isNotNull" valuePropName="checked">
+                </Space>
+              </Form.Item>
+              <Form.Item>
+                <Space>
+                  <Form.Item name="isNotNull" valuePropName="checked" noStyle>
                     <Checkbox>{t('data_manager.not_null')}?</Checkbox>
                   </Form.Item>
-
-                  <Form.Item name="isUnsigned" valuePropName="checked">
+                  <Form.Item name="isUnsigned" valuePropName="checked" noStyle>
                     <Checkbox>{t('data_manager.unsigned')}?</Checkbox>
                   </Form.Item>
                 </Space>
@@ -568,10 +568,10 @@ export default function DBTableStructure() {
                 label={t('data_manager.default_value')}
                 name="defaultValue"
               >
-                <Input />
+                <Input style={{ maxWidth: 300 }} />
               </Form.Item>
               <Form.Item label={t('data_manager.comment')} name="comment">
-                <Input />
+                <Input style={{ maxWidth: 300 }} />
               </Form.Item>
             </>
           )}
@@ -582,14 +582,14 @@ export default function DBTableStructure() {
                 name="name"
                 rules={[{ required: true }]}
               >
-                <Input />
+                <Input style={{ maxWidth: 300 }} />
               </Form.Item>
               <Form.Item
                 name="type"
                 label={t('data_manager.type')}
                 rules={[{ required: true }]}
               >
-                <Select>
+                <Select style={{ maxWidth: 300 }}>
                   {Object.entries(xcClient.TableInfoIndexType)
                     .filter((t) => typeof t[1] === 'number')
                     .filter((t) => t[0] !== 'Primary')
@@ -606,14 +606,7 @@ export default function DBTableStructure() {
                     {fields.map((f, i) => (
                       <Form.Item
                         key={f.key}
-                        {...(i > 0
-                          ? {
-                              wrapperCol: {
-                                offset: 4,
-                              },
-                            }
-                          : null)}
-                        label={i === 0 ? t('data_manager.columns') : ''}
+                        label={`${t('data_manager.columns')} #${i + 1}`}
                       >
                         <Space>
                           <Form.Item
