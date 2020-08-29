@@ -750,7 +750,7 @@ export type UpdateHandle = {
   whereColumns: UpdateHandleWhereColumn[]
 }
 
-const SelectRowsPerPage = 100
+const SelectRowsPerPage = 50
 
 export type SelectTableResult = {
   columns: TableInfoColumn[]
@@ -851,24 +851,22 @@ export async function selectTableRow(
     ) {
       // _tidb_rowid column is not available. This might be a system table. Do not project it or order by it.
 
-      // No order by and no limit
       columnNamesEscaped.length = columnNamesEscaped.length - 1
-      const data = await evalSql(
-        `
+      const data = await evalSql(`
         SELECT
           ${columnNamesEscaped.join(', ')}
         FROM
           ${eid(dbName)}.${eid(tableName)}
-      `,
-        { maxRows: 200 }
-      )
+        LIMIT
+          ${(page0 || 0) * SelectRowsPerPage}, ${SelectRowsPerPage}
+      `)
 
       return {
         columns: tableInfo.columns,
         rows: (data.rows ?? []) as any,
         isUpdatable: false,
-        isPaginationUnavailable: true,
-        allRowsBeforeTruncation: data.actual_rows,
+        isPaginationUnavailable: false,
+        // allRowsBeforeTruncation: data.actual_rows,
       }
     } else {
       throw e

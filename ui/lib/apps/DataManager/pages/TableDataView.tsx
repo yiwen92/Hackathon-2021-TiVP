@@ -10,6 +10,7 @@ import {
   Tooltip,
   Checkbox,
   Divider,
+  Space,
 } from 'antd'
 import {
   ArrowLeftOutlined,
@@ -17,6 +18,7 @@ import {
   ForwardOutlined,
   TableOutlined,
   QuestionCircleOutlined,
+  LoadingOutlined,
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { Card, Pre, Head, AnimatedSkeleton } from '@lib/components'
@@ -345,41 +347,39 @@ export default function TableDataView() {
       }
     }
     return (
-      <>
-        {(tableInfo.rows.length > 0 ||
-          (tableInfo.rows.length === 0 && pageNum > 1)) && (
-          <Form onFinish={submitPage} style={{ marginTop: '2rem' }}>
-            <BackwardOutlined
-              onClick={() =>
-                pageNum > 1 &&
-                !tableInfo.isPaginationUnavailable &&
-                setPageNumb(pageNum - 1)
-              }
+      <Form onFinish={submitPage} style={{ marginTop: '2rem' }}>
+        <Space>
+          <BackwardOutlined
+            onClick={() =>
+              pageNum > 1 &&
+              !tableInfo.isPaginationUnavailable &&
+              setPageNumb(pageNum - 1)
+            }
+          />
+          <Form.Item name="pageNum" initialValue={pageNum} noStyle>
+            <Input
+              style={{ width: '5rem' }}
+              value={pageNum}
+              disabled={!tableInfo.isPaginationUnavailable ? false : true}
             />
-            <Form.Item name="pageNum" initialValue={pageNum} noStyle>
-              <Input
-                style={{ width: '5rem' }}
-                value={pageNum}
-                disabled={!tableInfo.isPaginationUnavailable ? false : true}
-              />
-            </Form.Item>
-            <ForwardOutlined
-              onClick={() =>
-                !tableInfo.isPaginationUnavailable && setPageNumb(pageNum + 1)
-              }
-            />
-            {tableInfo.allRowsBeforeTruncation &&
-              tableInfo.allRowsBeforeTruncation < tableInfo.rows.length && (
-                <Tooltip
-                  placement="leftTop"
-                  title={t('data_manager.select_table.pagination_tips')}
-                >
-                  <QuestionCircleOutlined />
-                </Tooltip>
-              )}
-          </Form>
-        )}
-      </>
+          </Form.Item>
+          <ForwardOutlined
+            onClick={() =>
+              !tableInfo.isPaginationUnavailable && setPageNumb(pageNum + 1)
+            }
+          />
+          {isLoading && <LoadingOutlined />}
+          {tableInfo.allRowsBeforeTruncation &&
+            tableInfo.allRowsBeforeTruncation < tableInfo.rows.length && (
+              <Tooltip
+                placement="leftTop"
+                title={t('data_manager.select_table.pagination_tips')}
+              >
+                <QuestionCircleOutlined />
+              </Tooltip>
+            )}
+        </Space>
+      </Form>
     )
   }
 
