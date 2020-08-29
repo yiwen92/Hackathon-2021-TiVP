@@ -707,16 +707,9 @@ export async function createTable(options: CreateTableOptions) {
     switch (options.partition.type) {
       case PartitionType.RANGE:
         {
-          const pDef = _.sortBy(
-            [...options.partition.partitions],
-            (partition) => {
-              if (partition.boundaryValue == null) {
-                return Number.MAX_SAFE_INTEGER
-              } else {
-                return partition.boundaryValue!
-              }
-            }
-          ).map(buildRangePartitionStatement)
+          const pDef = options.partition.partitions.map(
+            buildRangePartitionStatement
+          )
           sql += ` PARTITION BY RANGE(${options.partition.expr}) (
             ${pDef.join(',\n')}
           )`
