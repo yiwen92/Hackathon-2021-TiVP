@@ -757,7 +757,7 @@ export type UpdateHandle = {
   whereColumns: UpdateHandleWhereColumn[]
 }
 
-const SelectRowsPerPage = 1000
+const SelectRowsPerPage = 100
 
 export type SelectTableResult = {
   columns: TableInfoColumn[]
@@ -857,12 +857,15 @@ export async function selectTableRow(
 
       // No order by and no limit
       columnNamesEscaped.length = columnNamesEscaped.length - 1
-      const data = await evalSql(`
+      const data = await evalSql(
+        `
         SELECT
           ${columnNamesEscaped.join(', ')}
         FROM
           ${eid(dbName)}.${eid(tableName)}
-      `)
+      `,
+        { maxRows: 200 }
+      )
 
       return {
         columns: tableInfo.columns,

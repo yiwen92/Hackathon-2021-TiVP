@@ -411,6 +411,7 @@ export default function TableDataView() {
                   {
                     title: t('data_manager.action'),
                     key: 'action',
+                    width: 200,
                     render: (row) => (
                       <>
                         <a
