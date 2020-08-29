@@ -19,7 +19,7 @@ import {
   QuestionCircleOutlined,
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { Card, Pre, Head } from '@lib/components'
+import { Card, Pre, Head, AnimatedSkeleton } from '@lib/components'
 import { useTranslation } from 'react-i18next'
 import useQueryParams from '@lib/utils/useQueryParams'
 
@@ -29,6 +29,7 @@ export default function TableDataView() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [form] = Form.useForm()
+  const [isLoading, setIsLoading] = useState(false)
   const [tableInfo, setTableInfo] = useState<any>()
   const [formModalVisible, setFormModalVisible] = useState(false)
   const [confirmModalVisible, setConfirmModalVisible] = useState(false)
@@ -76,10 +77,15 @@ export default function TableDataView() {
   }
 
   const selectTableRow = async (page) => {
+    setIsLoading(true)
     try {
       setTableInfo(await Database.selectTableRow(db, table, page - 1))
     } catch (e) {
-      console.log('selectTableRow error', e)
+      Modal.error({
+        content: <Pre>{e.message}</Pre>,
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -165,16 +171,20 @@ export default function TableDataView() {
       title: 'Column',
       key: 'column',
       dataIndex: 'column',
+      ellipsis: true,
     },
     {
       title: 'Type',
       key: 'type',
       dataIndex: 'type',
+      ellipsis: true,
+      width: 150,
     },
     {
       title: 'NULL',
       key: 'isNotNull',
       dataIndex: 'isNotNull',
+      width: 100,
       render: (_, row, index) => {
         return editCol(row, index, 'checkbox')
       },
@@ -183,6 +193,7 @@ export default function TableDataView() {
       title: 'Value',
       dataIndex: 'value',
       key: 'value',
+      width: 150,
       render: (_, row, index) => {
         return editCol(row, index, 'input')
       },
@@ -250,13 +261,14 @@ export default function TableDataView() {
     return (
       <Form onFinish={handleInsertOrEditRow} form={form}>
         <Table
-          bordered
+          tableLayout="fixed"
+          size="small"
           pagination={false}
           dataSource={tableInfo.columns.map((column, idx) => {
             return {
-              ...{ key: idx },
-              ...{ column: column.name },
-              ...{ type: column.fieldType },
+              key: idx,
+              column: column.name,
+              type: column.fieldType,
               ...column,
             }
           })}
@@ -287,7 +299,7 @@ export default function TableDataView() {
         }
         visible={formModalVisible}
         onCancel={onCancel}
-        width={1024}
+        width={700}
         footer={null}
       >
         <InsertRowFormOnModal />
@@ -395,82 +407,93 @@ export default function TableDataView() {
       />
 
       <Card>
-        {tableInfo && (
-          <>
+        <AnimatedSkeleton showSkeleton={isLoading && !tableInfo}>
+          {tableInfo && (
             <Table
+              tableLayout="fixed"
+              size="small"
+              bordered
               style={{ overflow: 'auto' }}
-              columns={tableInfo.columns
-                .map((column, idx) => {
+              columns={[
+                {
+                  title: t('data_manager.action'),
+                  key: 'action',
+                  width: 150,
+                  render: (row) => (
+                    <>
+                      <a
+                        onClick={
+                          tableInfo.isUpdatable
+                            ? showFormModal({
+                                title: t('data_manager.select_table.edit_row'),
+                                type: 'editRow',
+                                message: '',
+                                rowInfo: row,
+                              })
+                            : showFormModal({
+                                title: t('data_manager.select_table.edit_row'),
+                                type: 'uneditable',
+                                message: t(
+                                  'data_manager.select_table.uneditable_warning'
+                                ),
+                              })
+                        }
+                      >
+                        {t('dbusers_manager.edit')}
+                      </a>
+                      <Divider type="vertical" />
+                      <a
+                        onClick={
+                          tableInfo.isUpdatable
+                            ? showFormModal({
+                                title: t(
+                                  'data_manager.select_table.delete_row'
+                                ),
+                                type: 'deleteRow',
+                                message: t(
+                                  'data_manager.select_table.delete_row_confirm_txt'
+                                ),
+                                rowInfo: row,
+                              })
+                            : showFormModal({
+                                title: t(
+                                  'data_manager.select_table.delete_row'
+                                ),
+                                type: 'uneditable',
+                                message: t(
+                                  'data_manager.select_table.uneditable_warning'
+                                ),
+                              })
+                        }
+                      >
+                        <Typography.Text type="danger">
+                          {t('data_manager.delete')}
+                        </Typography.Text>
+                      </a>
+                    </>
+                  ),
+                },
+                ...tableInfo.columns.map((column, idx) => {
                   return {
-                    ...{ title: column.name },
-                    ...{ key: idx },
-                    ...{ dataIndex: idx },
-                  }
-                })
-                .concat([
-                  {
-                    title: t('data_manager.action'),
-                    key: 'action',
+                    title: column.name,
+                    key: idx,
+                    dataIndex: idx,
+                    ellipsis: true,
                     width: 200,
-                    render: (row) => (
-                      <>
-                        <a
-                          onClick={
-                            tableInfo.isUpdatable
-                              ? showFormModal({
-                                  title: t(
-                                    'data_manager.select_table.edit_row'
-                                  ),
-                                  type: 'editRow',
-                                  message: '',
-                                  rowInfo: row,
-                                })
-                              : showFormModal({
-                                  title: t(
-                                    'data_manager.select_table.edit_row'
-                                  ),
-                                  type: 'uneditable',
-                                  message: t(
-                                    'data_manager.select_table.uneditable_warning'
-                                  ),
-                                })
-                          }
-                        >
-                          {t('dbusers_manager.edit')}
-                        </a>
-                        <Divider type="vertical" />
-                        <a
-                          onClick={
-                            tableInfo.isUpdatable
-                              ? showFormModal({
-                                  title: t(
-                                    'data_manager.select_table.delete_row'
-                                  ),
-                                  type: 'deleteRow',
-                                  message: t(
-                                    'data_manager.select_table.delete_row_confirm_txt'
-                                  ),
-                                  rowInfo: row,
-                                })
-                              : showFormModal({
-                                  title: t(
-                                    'data_manager.select_table.delete_row'
-                                  ),
-                                  type: 'uneditable',
-                                  message: t(
-                                    'data_manager.select_table.uneditable_warning'
-                                  ),
-                                })
-                          }
-                        >
-                          <Typography.Text type="danger">
-                            {t('data_manager.delete')}
+                    render: (t) => {
+                      if (t == null) {
+                        return (
+                          <Typography.Text type="secondary">
+                            <i>(NULL)</i>
                           </Typography.Text>
-                        </a>
-                      </>
-                    ),
-                  },
-                ])}
+                        )
+                      } else {
+                        return t
+                      }
+                    },
+                  }
+                }),
+              ]}
               dataSource={tableInfo.rows.map((data, i) => {
                 const obj = {}
                 obj['key'] = i
@@ -481,6 +504,10 @@ export default function TableDataView() {
               })}
               pagination={false}
             />
+          )}
+        </AnimatedSkeleton>
+        {tableInfo && (
+          <>
             <FormModal />
             <ConfirmModal />
             <Pagination />

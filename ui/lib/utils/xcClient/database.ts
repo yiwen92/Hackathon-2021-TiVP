@@ -845,7 +845,10 @@ export async function selectTableRow(
       isPaginationUnavailable: false,
     }
   } catch (e) {
-    if (e.message.indexOf(`Unknown column '_tidb_rowid'`) > -1) {
+    if (
+      e.message.indexOf(`Unknown column '_tidb_rowid'`) > -1 ||
+      e.message.indexOf(`Column ID -1`) > -1
+    ) {
       // _tidb_rowid column is not available. This might be a system table. Do not project it or order by it.
 
       // No order by and no limit

@@ -12,6 +12,7 @@ data_manager:
   create_view: Create View
   view_definition: View Definition
 
+  edit: Edit
   columns: Columns
   field_type: Field Type
   length: Length

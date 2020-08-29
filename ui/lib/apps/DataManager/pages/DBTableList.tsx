@@ -229,13 +229,18 @@ export default function DBTableList() {
         >
           {tables && (
             <Table
+              tableLayout="fixed"
+              size="small"
+              bordered
               dataSource={tables}
+              pagination={{ defaultPageSize: 50 }}
               rowKey="name"
               columns={[
                 {
                   title: t('data_manager.view_db.name'),
                   dataIndex: 'name',
                   key: 'name',
+                  ellipsis: true,
                   render: (name) => {
                     return (
                       <a href={`#/data/view?db=${db}&table=${name}`}>{name}</a>
@@ -246,15 +251,20 @@ export default function DBTableList() {
                   title: t('data_manager.view_db.type'),
                   dataIndex: 'type',
                   key: 'type',
+                  ellipsis: true,
+                  width: 150,
                 },
                 {
                   title: t('data_manager.view_db.comment'),
                   dataIndex: 'comment',
                   key: 'comment',
+                  ellipsis: true,
+                  width: 200,
                 },
                 {
                   title: t('data_manager.view_db.operation'),
                   key: 'operation',
+                  width: 120,
                   render: (_: any, record: any) => {
                     return (
                       <Dropdown
@@ -318,18 +328,11 @@ export default function DBTableList() {
       <Modal
         visible={visible}
         title={modalInfo.title}
-        width={1024}
+        width={700}
         onOk={form.submit}
         onCancel={handleCancel}
       >
-        <Form
-          form={form}
-          {...{
-            labelCol: { span: 4 },
-            wrapperCol: { span: 20 },
-          }}
-          onFinish={handleOk}
-        >
+        <Form form={form} onFinish={handleOk} layout="vertical">
           {modalInfo.type === 'editTable' && (
             <>
               <Form.Item
@@ -337,7 +340,7 @@ export default function DBTableList() {
                 name="tableName"
                 rules={[{ required: true }]}
               >
-                <Input />
+                <Input style={{ maxWidth: 300 }} />
               </Form.Item>
             </>
           )}

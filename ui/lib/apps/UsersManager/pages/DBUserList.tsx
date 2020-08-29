@@ -66,18 +66,19 @@ export default function DBUserList() {
       title: t('dbusers_manager.user_name'),
       key: 'user',
       dataIndex: 'user',
-      minWidth: 100,
-      render: (user) => <p> {user} </p>,
+      ellipsis: true,
     },
     {
       title: t('dbusers_manager.host'),
       key: 'host',
       dataIndex: 'host',
-      render: (host) => <p> {host} </p>,
+      ellipsis: true,
+      width: 200,
     },
     {
       title: t('dbusers_manager.action'),
       key: 'action',
+      width: 150,
       render: (user) => (
         <>
           {user.user !== 'root' && (
@@ -398,6 +399,10 @@ export default function DBUserList() {
         {t('dbusers_manager.create_user_title')}
       </Button>
       <Table
+        tableLayout="fixed"
+        size="small"
+        bordered
+        pagination={false}
         dataSource={dbUserList.map((user, i) => ({
           ...{ key: i },
           ...user,

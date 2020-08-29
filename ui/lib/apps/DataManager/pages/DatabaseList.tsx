@@ -142,7 +142,7 @@ export default function DatabaseList() {
       title: t('data_manager.db_name_column'),
       key: 'name',
       dataIndex: 'database_name',
-      minWidth: 100,
+      ellipsis: true,
       render: (database) => (
         <Link to={`/data/tables?db=${database}`}> {database} </Link>
       ),
@@ -150,6 +150,7 @@ export default function DatabaseList() {
     {
       title: t('data_manager.action'),
       key: 'action',
+      width: 120,
       render: (database) => (
         <Dropdown
           overlay={
@@ -200,6 +201,10 @@ export default function DatabaseList() {
           showSkeleton={isLoading && (!dbList || dbList.length === 0)}
         >
           <Table
+            tableLayout="fixed"
+            size="small"
+            bordered
+            pagination={false}
             dataSource={dbList.map((db, i) => ({
               ...{ key: i },
               ...{ database_name: db },

@@ -299,6 +299,9 @@ export default function DBTableStructure() {
         <AnimatedSkeleton showSkeleton={!tableInfo && isLoading}>
           {tableInfo && (
             <Table
+              tableLayout="fixed"
+              size="small"
+              bordered
               pagination={false}
               dataSource={tableInfo.columns}
               rowKey="name"
@@ -307,16 +310,19 @@ export default function DBTableStructure() {
                   title: t('data_manager.name'),
                   dataIndex: 'name',
                   key: 'name',
+                  ellipsis: true,
                 },
                 {
                   title: t('data_manager.field_type'),
                   dataIndex: 'fieldType',
                   key: 'fieldType',
+                  ellipsis: true,
                 },
                 {
                   title: t('data_manager.not_null'),
                   dataIndex: 'isNotNull',
                   key: 'isNotNull',
+                  width: 100,
                   render: (v) => {
                     if (v) {
                       return <CheckOutlined />
@@ -329,15 +335,18 @@ export default function DBTableStructure() {
                   title: t('data_manager.default_value'),
                   dataIndex: 'defaultValue',
                   key: 'defaultValue',
+                  width: 150,
                 },
                 {
                   title: t('data_manager.comment'),
                   dataIndex: 'comment',
                   key: 'comment',
+                  width: 150,
                 },
                 {
                   title: t('data_manager.view_db.operation'),
                   key: 'operation',
+                  width: 150,
                   render: (_: any, record: any) => {
                     return (
                       tableInfo?.info.type === xcClient.TableType.TABLE && (
@@ -395,6 +404,9 @@ export default function DBTableStructure() {
           <AnimatedSkeleton showSkeleton={!tableInfo && isLoading}>
             {tableInfo && (
               <Table
+                tableLayout="fixed"
+                size="small"
+                bordered
                 pagination={false}
                 dataSource={tableInfo.indexes.map((d, i) => ({
                   ...{ key: d.name + i },
@@ -406,31 +418,34 @@ export default function DBTableStructure() {
                     title: t('data_manager.name'),
                     dataIndex: 'name',
                     key: 'name',
-                  },
-                  {
-                    title: 'Type',
-                    dataIndex: 'type',
-                    key: 'type',
-                    render: (_: any, record: any) =>
-                      xcClient.TableInfoIndexType[record.type],
+                    ellipsis: true,
                   },
                   {
                     title: t('data_manager.columns'),
                     dataIndex: 'columns',
                     key: 'columns',
+                    ellipsis: true,
+                  },
+                  {
+                    title: 'Type',
+                    dataIndex: 'type',
+                    key: 'type',
+                    width: 150,
+                    render: (_: any, record: any) =>
+                      xcClient.TableInfoIndexType[record.type],
                   },
                   {
                     title: t('data_manager.delete'),
                     key: 'isDeleteble',
-                    render: (_: any, record: any) => (
-                      <Button
-                        type="link"
-                        danger
-                        disabled={!record.isDeleteble}
-                        icon={<CloseSquareOutlined />}
-                        onClick={handleDeleteIndex(record.name)}
-                      />
-                    ),
+                    width: 150,
+                    render: (_: any, record: any) =>
+                      record.isDeleteble && (
+                        <a onClick={handleDeleteIndex(record.name)}>
+                          <Typography.Text type="danger">
+                            <CloseSquareOutlined />
+                          </Typography.Text>
+                        </a>
+                      ),
                   },
                 ]}
               />
@@ -451,6 +466,9 @@ export default function DBTableStructure() {
             {tableInfo.partition.type === xcClient.PartitionType.RANGE && (
               <Descriptions.Item label={t('data_manager.partitions')}>
                 <Table
+                  tableLayout="fixed"
+                  size="small"
+                  bordered
                   pagination={false}
                   dataSource={tableInfo.partition.partitions}
                   columns={[
@@ -458,6 +476,7 @@ export default function DBTableStructure() {
                       title: t('data_manager.name'),
                       dataIndex: 'name',
                       key: 'name',
+                      ellipsis: true,
                     },
                     {
                       title: t('data_manager.partition_value'),
@@ -465,10 +484,12 @@ export default function DBTableStructure() {
                       key: 'boundaryValue',
                       render: (_: any, record: any) =>
                         record.boundaryValue || 'MAXVALUE',
+                      ellipsis: true,
                     },
                     {
                       title: t('data_manager.view_db.operation'),
                       key: 'operation',
+                      width: 150,
                       render: (_: any, record: any) => {
                         return (
                           tableInfo?.info.type === xcClient.TableType.TABLE && (
@@ -510,6 +531,9 @@ export default function DBTableStructure() {
             {tableInfo.partition.type === xcClient.PartitionType.LIST && (
               <Descriptions.Item label={t('data_manager.partitions')}>
                 <Table
+                  tableLayout="fixed"
+                  size="small"
+                  bordered
                   pagination={false}
                   dataSource={tableInfo.partition.partitions}
                   columns={[
@@ -517,11 +541,13 @@ export default function DBTableStructure() {
                       title: t('data_manager.name'),
                       dataIndex: 'name',
                       key: 'name',
+                      ellipsis: true,
                     },
                     {
                       title: t('data_manager.value'),
                       dataIndex: 'values',
                       key: 'values',
+                      ellipsis: true,
                     },
                   ]}
                 />
