@@ -544,10 +544,43 @@ export default function DBTableStructure() {
                       ellipsis: true,
                     },
                     {
-                      title: t('data_manager.value'),
+                      title: t('data_manager.partition_value'),
                       dataIndex: 'values',
                       key: 'values',
                       ellipsis: true,
+                    },
+                    {
+                      title: t('data_manager.view_db.operation'),
+                      key: 'operation',
+                      width: 150,
+                      render: (_: any, record: any) => {
+                        return (
+                          tableInfo?.info.type === xcClient.TableType.TABLE && (
+                            <Dropdown
+                              overlay={
+                                <Menu>
+                                  <Menu.Item>
+                                    <a
+                                      onClick={handleDeletePartition(
+                                        record.name
+                                      )}
+                                    >
+                                      <Typography.Text type="danger">
+                                        {t('data_manager.delete_partition')}
+                                      </Typography.Text>
+                                    </a>
+                                  </Menu.Item>
+                                </Menu>
+                              }
+                            >
+                              <a>
+                                {t('data_manager.view_db.operation')}{' '}
+                                <DownOutlined />
+                              </a>
+                            </Dropdown>
+                          )
+                        )
+                      },
                     },
                   ]}
                 />
