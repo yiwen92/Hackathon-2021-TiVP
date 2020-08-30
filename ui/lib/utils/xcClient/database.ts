@@ -948,7 +948,15 @@ export type UpdateColumnSpec = {
 function buildWhereStatementFromUpdateHandle(handle: UpdateHandle) {
   const where: string[] = []
   for (const c of handle.whereColumns) {
-    where.push(`${eid(c.columnName)} = ${e(c.columnValue)}`)
+    if (c.columnName.toLocaleLowerCase() === '_tidb_rowid') {
+      let n = Number(c.columnValue)
+      if (isNaN(n)) {
+        throw new Error('Invalid row (id = ' + c.columnValue + ')')
+      }
+      where.push(`${eid(c.columnName)} = ${n}`)
+    } else {
+      where.push(`${eid(c.columnName)} = ${e(c.columnValue)}`)
+    }
   }
   return where.join(' AND ')
 }
@@ -960,6 +968,10 @@ export async function updateTableRow(
   // Some columns may be not touched or updatable.
   columnsToUpdate: UpdateColumnSpec[]
 ) {
+  if (!handle) {
+    throw new Error('This row cannot be updated')
+  }
+
   const updates: string[] = []
   for (const c of columnsToUpdate) {
     updates.push(`${eid(c.columnName)} = ${e(c.value)}`)
@@ -981,6 +993,10 @@ export async function deleteTableRow(
   tableName: string,
   handle: UpdateHandle
 ) {
+  if (!handle) {
+    throw new Error('This row cannot be deleted')
+  }
+
   const whereStatement = buildWhereStatementFromUpdateHandle(handle)
   await evalSql(`
   DELETE FROM

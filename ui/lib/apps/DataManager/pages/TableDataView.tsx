@@ -41,7 +41,7 @@ export default function TableDataView() {
     type: '',
     title: '',
     message: '',
-    rowInfo: [],
+    rowInfo: {},
   })
 
   const showFormModal = (info) => () => {
@@ -71,7 +71,7 @@ export default function TableDataView() {
         onCancel={onCancel}
         onOk={
           modalInfo.type === 'deleteRow'
-            ? () => handleDeleteTableRow(modalInfo.rowInfo)
+            ? () => handleDeleteTableRow(modalInfo.rowInfo.handle)
             : onCancel
         }
       >
@@ -221,17 +221,10 @@ export default function TableDataView() {
     async function insertOrInsertTableRow() {
       try {
         if (modalInfo.type === 'editRow') {
-          const originData = tableInfo.columns.map((c, idx) => {
-            return {
-              ...{ columnName: c.name },
-              ...{ columnValue: modalInfo.rowInfo[idx] },
-            }
-          })
-
           await Database.updateTableRow(
             db,
             table,
-            { whereColumns: originData },
+            modalInfo.rowInfo.handle,
             columnsToInsert
           )
           Modal.success({
@@ -311,19 +304,10 @@ export default function TableDataView() {
     )
   }
 
-  const handleDeleteTableRow = (row) => {
-    const tableColumns = tableInfo.columns
-
-    const deleteRow = tableColumns.map((col, idx) => {
-      return {
-        ...{ columnName: col['name'] },
-        ...{ columnValue: row[idx] },
-      }
-    })
-
+  const handleDeleteTableRow = (handle) => {
     async function deleteTableRow() {
       try {
-        await Database.deleteTableRow(db, table, { whereColumns: deleteRow })
+        await Database.deleteTableRow(db, table, handle)
         selectTableRow(1)
         Modal.success({
           title: t('data_manager.delete_success_txt'),
@@ -399,7 +383,7 @@ export default function TableDataView() {
             onClick={showFormModal({
               type: 'insertRow',
               title: t('data_manager.select_table.insert_row'),
-              rowInfo: [],
+              rowInfo: {},
             })}
           >
             <TableOutlined />
@@ -426,7 +410,7 @@ export default function TableDataView() {
                       <Tooltip title={t('dbusers_manager.edit')}>
                         <a
                           onClick={
-                            tableInfo.isUpdatable
+                            tableInfo.isUpdatable && row.handle
                               ? showFormModal({
                                   title: t(
                                     'data_manager.select_table.edit_row'
@@ -435,15 +419,15 @@ export default function TableDataView() {
                                   message: '',
                                   rowInfo: row,
                                 })
-                              : showFormModal({
-                                  title: t(
-                                    'data_manager.select_table.edit_row'
-                                  ),
-                                  type: 'uneditable',
-                                  message: t(
-                                    'data_manager.select_table.uneditable_warning'
-                                  ),
-                                })
+                              : () =>
+                                  Modal.error({
+                                    title: t(
+                                      'data_manager.select_table.edit_row'
+                                    ),
+                                    content: t(
+                                      'data_manager.select_table.uneditable_warning'
+                                    ),
+                                  })
                           }
                         >
                           <EditOutlined />
@@ -452,7 +436,7 @@ export default function TableDataView() {
                       <Tooltip title={t('data_manager.delete')}>
                         <a
                           onClick={
-                            tableInfo.isUpdatable
+                            tableInfo.isUpdatable && row.handle
                               ? showFormModal({
                                   title: t(
                                     'data_manager.select_table.delete_row'
@@ -463,15 +447,15 @@ export default function TableDataView() {
                                   ),
                                   rowInfo: row,
                                 })
-                              : showFormModal({
-                                  title: t(
-                                    'data_manager.select_table.delete_row'
-                                  ),
-                                  type: 'uneditable',
-                                  message: t(
-                                    'data_manager.select_table.uneditable_warning'
-                                  ),
-                                })
+                              : () =>
+                                  Modal.error({
+                                    title: t(
+                                      'data_manager.select_table.delete_row'
+                                    ),
+                                    content: t(
+                                      'data_manager.select_table.uneditable_warning'
+                                    ),
+                                  })
                           }
                         >
                           <Typography.Text type="danger">
@@ -509,6 +493,7 @@ export default function TableDataView() {
                 data.map((row, idx) => {
                   obj[idx] = row
                 })
+                obj['handle'] = tableInfo.handles?.[i]
                 return obj
               })}
               pagination={false}
