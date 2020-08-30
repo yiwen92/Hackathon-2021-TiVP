@@ -94,7 +94,7 @@ export default function DBTableList() {
 
   const [form] = Form.useForm()
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [tables, setTables] = useState<xcClient.TableInfo[]>()
   const [visible, setVisible] = useState(false)
   const [modalInfo, setModalInfo] = useState<any>({
@@ -259,7 +259,6 @@ export default function DBTableList() {
                   dataIndex: 'comment',
                   key: 'comment',
                   ellipsis: true,
-                  width: 200,
                 },
                 {
                   title: t('data_manager.view_db.operation'),

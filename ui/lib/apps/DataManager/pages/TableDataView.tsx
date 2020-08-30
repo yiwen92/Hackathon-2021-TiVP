@@ -19,6 +19,8 @@ import {
   TableOutlined,
   QuestionCircleOutlined,
   LoadingOutlined,
+  CloseOutlined,
+  EditOutlined,
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { Card, Pre, Head, AnimatedSkeleton } from '@lib/components'
@@ -31,7 +33,7 @@ export default function TableDataView() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [form] = Form.useForm()
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [tableInfo, setTableInfo] = useState<any>()
   const [formModalVisible, setFormModalVisible] = useState(false)
   const [confirmModalVisible, setConfirmModalVisible] = useState(false)
@@ -360,7 +362,7 @@ export default function TableDataView() {
             <Input
               style={{ width: '5rem' }}
               value={pageNum}
-              disabled={!tableInfo.isPaginationUnavailable ? false : true}
+              disabled={tableInfo.isPaginationUnavailable || isLoading}
             />
           </Form.Item>
           <ForwardOutlined
@@ -418,58 +420,65 @@ export default function TableDataView() {
                 {
                   title: t('data_manager.action'),
                   key: 'action',
-                  width: 150,
+                  width: 80,
                   render: (row) => (
                     <>
-                      <a
-                        onClick={
-                          tableInfo.isUpdatable
-                            ? showFormModal({
-                                title: t('data_manager.select_table.edit_row'),
-                                type: 'editRow',
-                                message: '',
-                                rowInfo: row,
-                              })
-                            : showFormModal({
-                                title: t('data_manager.select_table.edit_row'),
-                                type: 'uneditable',
-                                message: t(
-                                  'data_manager.select_table.uneditable_warning'
-                                ),
-                              })
-                        }
-                      >
-                        {t('dbusers_manager.edit')}
-                      </a>
-                      <Divider type="vertical" />
-                      <a
-                        onClick={
-                          tableInfo.isUpdatable
-                            ? showFormModal({
-                                title: t(
-                                  'data_manager.select_table.delete_row'
-                                ),
-                                type: 'deleteRow',
-                                message: t(
-                                  'data_manager.select_table.delete_row_confirm_txt'
-                                ),
-                                rowInfo: row,
-                              })
-                            : showFormModal({
-                                title: t(
-                                  'data_manager.select_table.delete_row'
-                                ),
-                                type: 'uneditable',
-                                message: t(
-                                  'data_manager.select_table.uneditable_warning'
-                                ),
-                              })
-                        }
-                      >
-                        <Typography.Text type="danger">
-                          {t('data_manager.delete')}
-                        </Typography.Text>
-                      </a>
+                      <Tooltip title={t('dbusers_manager.edit')}>
+                        <a
+                          onClick={
+                            tableInfo.isUpdatable
+                              ? showFormModal({
+                                  title: t(
+                                    'data_manager.select_table.edit_row'
+                                  ),
+                                  type: 'editRow',
+                                  message: '',
+                                  rowInfo: row,
+                                })
+                              : showFormModal({
+                                  title: t(
+                                    'data_manager.select_table.edit_row'
+                                  ),
+                                  type: 'uneditable',
+                                  message: t(
+                                    'data_manager.select_table.uneditable_warning'
+                                  ),
+                                })
+                          }
+                        >
+                          <EditOutlined />
+                        </a>
+                      </Tooltip>
+                      <Tooltip title={t('data_manager.delete')}>
+                        <a
+                          onClick={
+                            tableInfo.isUpdatable
+                              ? showFormModal({
+                                  title: t(
+                                    'data_manager.select_table.delete_row'
+                                  ),
+                                  type: 'deleteRow',
+                                  message: t(
+                                    'data_manager.select_table.delete_row_confirm_txt'
+                                  ),
+                                  rowInfo: row,
+                                })
+                              : showFormModal({
+                                  title: t(
+                                    'data_manager.select_table.delete_row'
+                                  ),
+                                  type: 'uneditable',
+                                  message: t(
+                                    'data_manager.select_table.uneditable_warning'
+                                  ),
+                                })
+                          }
+                        >
+                          <Typography.Text type="danger">
+                            <CloseOutlined />
+                          </Typography.Text>
+                        </a>
+                      </Tooltip>
                     </>
                   ),
                 },

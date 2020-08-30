@@ -28,6 +28,12 @@ data_manager:
   insert_column_at_head: Insert Column at Head
   insert_column_at_tail: Insert Column at Tail
 
+  column_constraint: Column Constraint
+  table_constraint: Table Constraint
+  add_table_constraint: Add Table Constraint
+  constraint_expr: Constraint Expression
+  delete_constraint: Delete Constraint
+  constraints: Constraints
   partition_table: Partition Table
   add_partition_table: Add Partition Table
   partition_type: Partition Type
@@ -37,6 +43,8 @@ data_manager:
   partitions: Partitions
   partition_value: Value
   number_of_partitions: Number Of Partitions
+
+  create: Create
 
   indexes: Indexes
   add_index: Add Index

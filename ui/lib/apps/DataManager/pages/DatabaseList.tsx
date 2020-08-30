@@ -18,7 +18,7 @@ import { DatabaseOutlined, DownOutlined } from '@ant-design/icons'
 // route: /data
 export default function DatabaseList() {
   const [dbList, setDbList] = useState<Object[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const [createModalVisible, setCreateModalVisible] = useState(false)
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)

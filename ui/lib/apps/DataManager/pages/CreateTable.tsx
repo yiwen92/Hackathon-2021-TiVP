@@ -100,6 +100,7 @@ const CreateTable = () => {
       dbName: db,
       tableName: values.tableName,
       comment: values.comment,
+      constraints: values.constraints,
       columns,
       primaryKeys: columns
         .map((c) => (c.isPrimaryKey ? { columnName: c.name } : undefined))
@@ -132,7 +133,12 @@ const CreateTable = () => {
         }
       />
       <Card>
-        <Form form={form} onFinish={handleOk} layout="vertical">
+        <Form
+          form={form}
+          onFinish={handleOk}
+          layout="vertical"
+          initialValues={{ columns: [{}] }}
+        >
           <Form.Item
             label={t('data_manager.name')}
             name="tableName"
@@ -203,32 +209,101 @@ const CreateTable = () => {
                           </Select>
                         </Form.Item>
                       </div>
-                      <div>
-                        <Form.Item
-                          name={[f.name, 'length']}
-                          fieldKey={[f.fieldKey, 'length'] as any}
-                          noStyle
-                        >
-                          <Input
-                            type="number"
-                            placeholder={t('data_manager.length')}
-                            style={{ width: 100 }}
-                          />
-                        </Form.Item>
-                      </div>
-                      <div>
-                        <Form.Item
-                          name={[f.name, 'decimals']}
-                          fieldKey={[f.fieldKey, 'decimals'] as any}
-                          noStyle
-                        >
-                          <Input
-                            type="number"
-                            placeholder={t('data_manager.decimal')}
-                            style={{ width: 100 }}
-                          />
-                        </Form.Item>
-                      </div>
+                      <Form.Item
+                        shouldUpdate={(prev, next) => {
+                          return (
+                            prev?.columns?.[f.name]?.typeName !==
+                            next?.columns?.[f.name]?.typeName
+                          )
+                        }}
+                        noStyle
+                      >
+                        {(form) => {
+                          const typeName = form.getFieldValue([
+                            'columns',
+                            f.name,
+                            'typeName',
+                          ])
+                          return (
+                            <>
+                              {typeName &&
+                                xcClient.isFieldTypeNameSupportLength(
+                                  typeName
+                                ) && (
+                                  <div>
+                                    <Form.Item
+                                      name={[f.name, 'length']}
+                                      fieldKey={[f.fieldKey, 'length'] as any}
+                                      noStyle
+                                    >
+                                      <Input
+                                        type="number"
+                                        placeholder={t('data_manager.length')}
+                                        style={{ width: 100 }}
+                                      />
+                                    </Form.Item>
+                                  </div>
+                                )}
+                              {typeName &&
+                                xcClient.isFieldTypeNameSupportDecimal(
+                                  typeName
+                                ) && (
+                                  <div>
+                                    <Form.Item
+                                      name={[f.name, 'decimals']}
+                                      fieldKey={[f.fieldKey, 'decimals'] as any}
+                                      noStyle
+                                    >
+                                      <Input
+                                        type="number"
+                                        placeholder={t('data_manager.decimal')}
+                                        style={{ width: 100 }}
+                                      />
+                                    </Form.Item>
+                                  </div>
+                                )}
+                              {typeName &&
+                                xcClient.isFieldTypeNameSupportUnsigned(
+                                  typeName
+                                ) && (
+                                  <div>
+                                    <Form.Item
+                                      name={[f.name, 'isUnsigned']}
+                                      fieldKey={
+                                        [f.fieldKey, 'isUnsigned'] as any
+                                      }
+                                      valuePropName="checked"
+                                      noStyle
+                                    >
+                                      <Checkbox>
+                                        {t('data_manager.unsigned')}?
+                                      </Checkbox>
+                                    </Form.Item>
+                                  </div>
+                                )}
+                              {typeName &&
+                                xcClient.isFieldTypeNameSupportAutoIncrement(
+                                  typeName
+                                ) && (
+                                  <div>
+                                    <Form.Item
+                                      name={[f.name, 'isAutoIncrement']}
+                                      fieldKey={
+                                        [f.fieldKey, 'isAutoIncrement'] as any
+                                      }
+                                      valuePropName="checked"
+                                      noStyle
+                                    >
+                                      <Checkbox>
+                                        {t('data_manager.auto_increment')}?
+                                      </Checkbox>
+                                    </Form.Item>
+                                  </div>
+                                )}
+                            </>
+                          )
+                        }}
+                      </Form.Item>
                       <div>
                         <Form.Item
                           name={[f.name, 'isNotNull']}
@@ -241,34 +316,12 @@ const CreateTable = () => {
                       </div>
                       <div>
                         <Form.Item
-                          name={[f.name, 'isUnsigned']}
-                          fieldKey={[f.fieldKey, 'isUnsigned'] as any}
-                          valuePropName="checked"
-                          noStyle
-                        >
-                          <Checkbox>{t('data_manager.unsigned')}?</Checkbox>
-                        </Form.Item>
-                      </div>
-                      <div>
-                        <Form.Item
                           name={[f.name, 'isPrimaryKey']}
                           fieldKey={[f.fieldKey, 'isPrimaryKey'] as any}
                           valuePropName="checked"
                           noStyle
                         >
                           <Checkbox>{t('data_manager.primary_key')}?</Checkbox>
-                        </Form.Item>
-                      </div>
-                      <div>
-                        <Form.Item
-                          name={[f.name, 'isAutoIncrement']}
-                          fieldKey={[f.fieldKey, 'isAutoIncrement'] as any}
-                          valuePropName="checked"
-                          noStyle
-                        >
-                          <Checkbox>
-                            {t('data_manager.auto_increment')}?
-                          </Checkbox>
                         </Form.Item>
                       </div>
                       <div>
@@ -318,10 +371,72 @@ const CreateTable = () => {
               </>
             )}
           </Form.List>
+          <Form.List name="constraints">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map((f, i) => (
+                  <Form.Item
+                    key={f.key}
+                    label={`${t('data_manager.table_constraint')} #${i + 1}`}
+                  >
+                    <Space>
+                      <Form.Item
+                        name={[f.name, 'name']}
+                        fieldKey={[f.fieldKey, 'name'] as any}
+                        rules={[
+                          {
+                            required: true,
+                            message: `${t('data_manager.please_input')}${t(
+                              'data_manager.name'
+                            )}`,
+                          },
+                        ]}
+                        noStyle
+                      >
+                        <Input placeholder={t('data_manager.name')} />
+                      </Form.Item>
+                      <Form.Item
+                        name={[f.name, 'expr']}
+                        fieldKey={[f.fieldKey, 'expr'] as any}
+                        rules={[
+                          {
+                            required: true,
+                            message: `${t('data_manager.please_input')}${t(
+                              'data_manager.constraint_expr'
+                            )}`,
+                          },
+                        ]}
+                        noStyle
+                      >
+                        <Input
+                          placeholder={t('data_manager.constraint_expr')}
+                        />
+                      </Form.Item>
+                      <MinusSquareTwoTone
+                        twoToneColor="#ff4d4f"
+                        onClick={() => remove(f.name)}
+                      />
+                    </Space>
+                  </Form.Item>
+                ))}
+                <Form.Item>
+                  <Button
+                    type="dashed"
+                    onClick={() => {
+                      add()
+                    }}
+                  >
+                    <PlusOutlined />
+                    {t('data_manager.add_table_constraint')}
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
           <Form.Item>
             <Space>
               <Switch onChange={() => setaddPartition(!addPartition)} />
-              {t('data_manager.add_partition_table')}
+              {t('data_manager.partition_table')}
             </Space>
           </Form.Item>
           {addPartition && (

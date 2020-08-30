@@ -1,6 +1,7 @@
 import { evalSql, evalSqlObj } from './util'
 import SqlString from 'sqlstring'
 import _ from 'lodash'
+import client from '@lib/client'
 
 function eid(n: string): string {
   return SqlString.escapeId(n, true)
@@ -134,17 +135,24 @@ export type TableInfoIndex = {
   isDeleteble: boolean // Primary index is not deleteble. For isDeleteble==false, do not show a delete icon
 }
 
+export type ConstraintInfo = {
+  name: string
+  expr: string
+}
+
 export type GetTableInfoResult = {
   info: TableInfo
   viewDefinition?: string
   columns: TableInfoColumn[]
   indexes: TableInfoIndex[]
   partition?: PartitionBy
+  constraints?: ConstraintInfo[]
 }
 
 export async function getTableInfo(
   dbName: string,
-  tableName: string
+  tableName: string,
+  full: boolean = true
 ): Promise<GetTableInfoResult> {
   let info: TableInfo
   {
@@ -155,7 +163,7 @@ export async function getTableInfo(
     info = d.tables[0]
   }
   let viewDefinition: string | undefined
-  if (info.type === TableType.VIEW) {
+  if (info.type === TableType.VIEW && full) {
     const d = await evalSqlObj(
       SqlString.format(
         `
@@ -214,7 +222,7 @@ export async function getTableInfo(
   }
 
   let partition: PartitionBy | undefined
-  {
+  if (full) {
     const d = await evalSqlObj(
       SqlString.format(
         `
@@ -273,12 +281,30 @@ export async function getTableInfo(
     }
   }
 
+  let constraints
+  if (full) {
+    const d = await client
+      .getInstance()
+      .queryEditorQueryTableStatus(dbName, tableName)
+
+    const data = d.data as any
+    if ((data?.constraint_info?.length ?? 0) > 0) {
+      constraints = data.constraint_info.map((c) => {
+        return {
+          name: c?.constraint_name?.O,
+          expr: c?.expr_string,
+        }
+      })
+    }
+  }
+
   return {
     info,
     viewDefinition,
     columns,
     indexes,
     partition,
+    constraints,
   }
 }
 
@@ -320,6 +346,31 @@ export async function addListPartition(
   ADD PARTITION (
     ${buildListPartitionStatement(newPartition)}
   )
+  `)
+}
+
+export async function dropTableConstraint(
+  dbName: string,
+  tableName: string,
+  constraintName: string
+) {
+  await evalSql(`
+  ALTER TABLE
+    ${eid(dbName)}.${eid(tableName)}
+  DROP CONSTRAINT
+    ${eid(constraintName)}
+  `)
+}
+
+export async function addTableConstraint(
+  dbName: string,
+  tableName: string,
+  constraint: TableConstraintDefinition
+) {
+  await evalSql(`
+  ALTER TABLE
+    ${eid(dbName)}.${eid(tableName)}
+  ADD ${buildTableConstraintStatement(constraint)}
   `)
 }
 
@@ -658,15 +709,6 @@ export type PartitionBy =
   | PartitionByHashDefinition
   | PartitionByListDefinition
 
-export type CreateTableOptions = {
-  dbName: string
-  tableName: string
-  comment?: string
-  columns: NewColumnDefinition[]
-  primaryKeys?: AddIndexOptionsColumn[]
-  partition?: PartitionBy
-}
-
 function buildRangePartitionStatement(p: RangePartitionDefinition): string {
   let l = `PARTITION ${eid(p.name)} VALUES `
   if (p.boundaryValue != null) {
@@ -678,6 +720,25 @@ function buildRangePartitionStatement(p: RangePartitionDefinition): string {
 
 function buildListPartitionStatement(p: ListPartitionDefinition): string {
   return `PARTITION ${eid(p.name)} VALUES IN (${p.values})`
+}
+
+export type TableConstraintDefinition = {
+  name: string
+  expr: string
+}
+
+function buildTableConstraintStatement(c: TableConstraintDefinition): string {
+  return `CONSTRAINT ${eid(c.name)} CHECK (${c.expr})`
+}
+
+export type CreateTableOptions = {
+  dbName: string
+  tableName: string
+  comment?: string
+  columns: NewColumnDefinition[]
+  primaryKeys?: AddIndexOptionsColumn[]
+  constraints?: TableConstraintDefinition[]
+  partition?: PartitionBy
 }
 
 // WARN: Supplying partition expr is dangerous
@@ -692,6 +753,11 @@ export async function createTable(options: CreateTableOptions) {
         options.primaryKeys!.map((k) => buildIndexDefinition(k)).join(', ') +
         `)`
     )
+  }
+  if ((options?.constraints?.length ?? 0) > 0) {
+    for (const c of options?.constraints ?? []) {
+      items.push(buildTableConstraintStatement(c))
+    }
   }
 
   const id = [options.dbName, options.tableName].map((n) => eid(n)).join('.')
@@ -750,7 +816,7 @@ export type UpdateHandle = {
   whereColumns: UpdateHandleWhereColumn[]
 }
 
-const SelectRowsPerPage = 50
+const SelectRowsPerPage = 100
 
 export type SelectTableResult = {
   columns: TableInfoColumn[]
@@ -777,7 +843,7 @@ export async function selectTableRow(
 ): Promise<SelectTableResult> {
   // To keep result stable, there will be a sorting.
   // For tables have PK, sort by PK. Otherwise, sort by _tidb_rowid
-  const tableInfo = await getTableInfo(dbName, tableName)
+  const tableInfo = await getTableInfo(dbName, tableName, false)
   let primaryIndex: TableInfoIndex | null = null
   for (const index of tableInfo.indexes) {
     if (index.type === TableInfoIndexType.Primary) {

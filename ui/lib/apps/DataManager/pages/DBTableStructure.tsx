@@ -35,8 +35,230 @@ import { parseColumnRelatedValues } from '@lib/utils/xcClient/util'
 import { useNavigate } from 'react-router-dom'
 import useQueryParams from '@lib/utils/useQueryParams'
 import { useTranslation } from 'react-i18next'
+import { useForm } from 'antd/lib/form/util'
 
 const { Option } = Select
+
+function useAddConstraintModal(
+  dbName: string,
+  tableName: string,
+  refreshFn: () => void
+) {
+  const [visible, setVisible] = useState(false)
+  const { t } = useTranslation()
+  const [form] = useForm()
+
+  async function handleFinish(form) {
+    try {
+      await xcClient.addTableConstraint(dbName, tableName, form)
+      Modal.success({
+        content: t('data_manager.create_success_txt'),
+        onOk: () => {
+          refreshFn()
+        },
+      })
+      setVisible(false)
+    } catch (e) {
+      Modal.error({
+        title: t('data_manager.create_failed_txt'),
+        content: <Pre>{e.message}</Pre>,
+      })
+      return
+    }
+  }
+
+  return {
+    showModal: () => {
+      form.resetFields()
+      setVisible(true)
+    },
+    render: () => {
+      return (
+        <Modal
+          title={t('data_manager.add_table_constraint')}
+          visible={visible}
+          onOk={form.submit}
+          onCancel={() => setVisible(false)}
+          okText={t('data_manager.create')}
+          cancelText={t('data_manager.cancel')}
+          destroyOnClose
+        >
+          <Form layout="vertical" onFinish={handleFinish} form={form}>
+            <Form.Item
+              name="name"
+              rules={[{ required: true }]}
+              label={t('data_manager.name')}
+            >
+              <Input style={{ maxWidth: 300 }} />
+            </Form.Item>
+            <Form.Item
+              name="expr"
+              rules={[{ required: true }]}
+              label={t('data_manager.constraint_expr')}
+            >
+              <Input style={{ maxWidth: 300 }} />
+            </Form.Item>
+          </Form>
+        </Modal>
+      )
+    },
+  }
+}
+
+function useAddListPartitionModal(
+  dbName: string,
+  tableName: string,
+  refreshFn: () => void
+) {
+  const [visible, setVisible] = useState(false)
+  const { t } = useTranslation()
+  const [form] = useForm()
+
+  async function handleFinish(form) {
+    try {
+      await xcClient.addListPartition(dbName, tableName, form)
+      Modal.success({
+        content: t('data_manager.create_success_txt'),
+        onOk: () => {
+          refreshFn()
+        },
+      })
+      setVisible(false)
+    } catch (e) {
+      Modal.error({
+        title: t('data_manager.create_failed_txt'),
+        content: <Pre>{e.message}</Pre>,
+      })
+      return
+    }
+  }
+
+  return {
+    showModal: () => {
+      form.resetFields()
+      setVisible(true)
+    },
+    render: () => {
+      return (
+        <Modal
+          title={t('data_manager.add_partition')}
+          visible={visible}
+          onOk={form.submit}
+          onCancel={() => setVisible(false)}
+          okText={t('data_manager.create')}
+          cancelText={t('data_manager.cancel')}
+          destroyOnClose
+        >
+          <Form layout="vertical" onFinish={handleFinish} form={form}>
+            <Form.Item
+              name="name"
+              rules={[{ required: true }]}
+              label={t('data_manager.name')}
+            >
+              <Input style={{ maxWidth: 300 }} />
+            </Form.Item>
+            <Form.Item
+              name="values"
+              rules={[{ required: true }]}
+              label={t('data_manager.partition_value')}
+            >
+              <Input style={{ maxWidth: 300 }} />
+            </Form.Item>
+          </Form>
+        </Modal>
+      )
+    },
+  }
+}
+
+function useAddRangePartitionModal(
+  dbName: string,
+  tableName: string,
+  refreshFn: () => void
+) {
+  const [visible, setVisible] = useState(false)
+  const { t } = useTranslation()
+  const [form] = useForm()
+
+  async function handleFinish(form) {
+    try {
+      await xcClient.addRangePartition(dbName, tableName, form)
+      Modal.success({
+        content: t('data_manager.create_success_txt'),
+        onOk: () => {
+          refreshFn()
+        },
+      })
+      setVisible(false)
+    } catch (e) {
+      Modal.error({
+        title: t('data_manager.create_failed_txt'),
+        content: <Pre>{e.message}</Pre>,
+      })
+      return
+    }
+  }
+
+  return {
+    showModal: () => {
+      form.resetFields()
+      setVisible(true)
+    },
+    render: () => {
+      return (
+        <Modal
+          title={t('data_manager.add_partition')}
+          visible={visible}
+          onOk={form.submit}
+          onCancel={() => setVisible(false)}
+          okText={t('data_manager.create')}
+          cancelText={t('data_manager.cancel')}
+          destroyOnClose
+        >
+          <Form
+            layout="vertical"
+            onFinish={handleFinish}
+            form={form}
+            initialValues={{ valueType: 0 }}
+          >
+            <Form.Item
+              name="name"
+              rules={[{ required: true }]}
+              label={t('data_manager.name')}
+            >
+              <Input style={{ maxWidth: 300 }} />
+            </Form.Item>
+            <Form.Item rules={[{ required: true }]} name="valueType">
+              <Select style={{ maxWidth: 300 }}>
+                <Option value={0}>LESS THAN</Option>
+                <Option value={1}>LESS THAN MAXVALUE</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              shouldUpdate={(prev, next) => {
+                return prev?.valueType !== next?.valueType
+              }}
+              noStyle
+            >
+              {(form) =>
+                form.getFieldValue('valueType') == 0 && (
+                  <Form.Item
+                    name="boundaryValue"
+                    rules={[{ required: true }]}
+                    style={{ maxWidth: 300 }}
+                    label={t('data_manager.partition_value')}
+                  >
+                    <Input placeholder={t('data_manager.partition_value')} />
+                  </Form.Item>
+                )
+              }
+            </Form.Item>
+          </Form>
+        </Modal>
+      )
+    },
+  }
+}
 
 // route: /data/table_structure?db=xxx&table=yyy
 export default function DBTableStructure() {
@@ -48,7 +270,7 @@ export default function DBTableStructure() {
   const [form] = Form.useForm()
 
   const [tableInfo, setTableInfo] = useState<xcClient.GetTableInfoResult>()
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const [visible, setVisible] = useState(false)
   const [modalInfo, setModalInfo] = useState<any>({
@@ -69,6 +291,18 @@ export default function DBTableStructure() {
     fetchTableInfo()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const addConstraintModal = useAddConstraintModal(db, table, fetchTableInfo)
+  const addListPartitionModal = useAddListPartitionModal(
+    db,
+    table,
+    fetchTableInfo
+  )
+  const addRangePartitionModal = useAddRangePartitionModal(
+    db,
+    table,
+    fetchTableInfo
+  )
 
   const showModal = (info) => () => {
     setModalInfo(info)
@@ -208,6 +442,29 @@ export default function DBTableStructure() {
     })()
   }
 
+  const handleDropConstraint = (name) => () => {
+    Modal.confirm({
+      icon: <ExclamationCircleOutlined />,
+      content: `${t('data_manager.confirm_delete_txt')} ${name}`,
+      onOk: async () => {
+        try {
+          await xcClient.dropTableConstraint(db, table, name)
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
+            onOk: () => {
+              fetchTableInfo()
+            },
+          })
+        } catch (e) {
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
+          })
+        }
+      },
+    })
+  }
+
   const handleDeleteIndex = (name) => () => {
     Modal.confirm({
       icon: <ExclamationCircleOutlined />,
@@ -304,6 +561,7 @@ export default function DBTableStructure() {
               bordered
               pagination={false}
               dataSource={tableInfo.columns}
+              style={{ overflow: 'auto' }}
               rowKey="name"
               columns={[
                 {
@@ -316,7 +574,9 @@ export default function DBTableStructure() {
                   title: t('data_manager.field_type'),
                   dataIndex: 'fieldType',
                   key: 'fieldType',
+                  width: 150,
                   ellipsis: true,
+                  render: (v) => <Pre>{v}</Pre>,
                 },
                 {
                   title: t('data_manager.not_null'),
@@ -408,11 +668,9 @@ export default function DBTableStructure() {
                 size="small"
                 bordered
                 pagination={false}
-                dataSource={tableInfo.indexes.map((d, i) => ({
-                  ...{ key: d.name + i },
-                  ...d,
-                  ...{ columns: d.columns.join(', ') },
-                }))}
+                rowKey="name"
+                dataSource={tableInfo.indexes}
+                style={{ overflow: 'auto' }}
                 columns={[
                   {
                     title: t('data_manager.name'),
@@ -425,9 +683,10 @@ export default function DBTableStructure() {
                     dataIndex: 'columns',
                     key: 'columns',
                     ellipsis: true,
+                    render: (v) => <Pre>{v.join(', ')}</Pre>,
                   },
                   {
-                    title: 'Type',
+                    title: t('data_manager.type'),
                     dataIndex: 'type',
                     key: 'type',
                     width: 150,
@@ -454,8 +713,96 @@ export default function DBTableStructure() {
         </Card>
       )}
 
+      <Card
+        title={t('data_manager.constraints')}
+        extra={
+          tableInfo?.info.type === xcClient.TableType.TABLE && (
+            <Space>
+              <Button
+                type="primary"
+                onClick={() => addConstraintModal.showModal()}
+              >
+                {t('data_manager.add_table_constraint')}
+              </Button>
+            </Space>
+          )
+        }
+      >
+        <AnimatedSkeleton showSkeleton={!tableInfo && isLoading}>
+          <Table
+            tableLayout="fixed"
+            size="small"
+            bordered
+            pagination={false}
+            rowKey="name"
+            dataSource={tableInfo?.constraints ?? []}
+            columns={[
+              {
+                title: t('data_manager.name'),
+                dataIndex: 'name',
+                key: 'name',
+                ellipsis: true,
+              },
+              {
+                title: t('data_manager.constraint_expr'),
+                dataIndex: 'expr',
+                key: 'expr',
+                ellipsis: true,
+                render: (v) => <Pre>{v}</Pre>,
+              },
+              {
+                title: t('data_manager.view_db.operation'),
+                key: 'operation',
+                width: 150,
+                render: (_: any, record: any) => (
+                  <Dropdown
+                    overlay={
+                      <Menu>
+                        <Menu.Item>
+                          <a onClick={handleDropConstraint(record.name)}>
+                            <Typography.Text type="danger">
+                              {t('data_manager.delete_constraint')}
+                            </Typography.Text>
+                          </a>
+                        </Menu.Item>
+                      </Menu>
+                    }
+                  >
+                    <a>
+                      {t('data_manager.view_db.operation')} <DownOutlined />
+                    </a>
+                  </Dropdown>
+                ),
+              },
+            ]}
+          />
+        </AnimatedSkeleton>
+      </Card>
+
       {tableInfo?.partition && (
-        <Card title={t('data_manager.partition_table')}>
+        <Card
+          title={t('data_manager.partition_table')}
+          extra={
+            <>
+              {tableInfo?.partition.type === xcClient.PartitionType.LIST && (
+                <Button
+                  type="primary"
+                  onClick={() => addListPartitionModal.showModal()}
+                >
+                  {t('data_manager.add_partition')}
+                </Button>
+              )}
+              {tableInfo?.partition.type === xcClient.PartitionType.RANGE && (
+                <Button
+                  type="primary"
+                  onClick={() => addRangePartitionModal.showModal()}
+                >
+                  {t('data_manager.add_partition')}
+                </Button>
+              )}
+            </>
+          }
+        >
           <Descriptions column={1}>
             <Descriptions.Item label={t('data_manager.partition_type')}>
               {tableInfo.partition.type}
@@ -471,6 +818,7 @@ export default function DBTableStructure() {
                   bordered
                   pagination={false}
                   dataSource={tableInfo.partition.partitions}
+                  rowKey="name"
                   columns={[
                     {
                       title: t('data_manager.name'),
@@ -482,8 +830,9 @@ export default function DBTableStructure() {
                       title: t('data_manager.partition_value'),
                       dataIndex: 'boundaryValue',
                       key: 'boundaryValue',
-                      render: (_: any, record: any) =>
-                        record.boundaryValue || 'MAXVALUE',
+                      render: (_: any, record: any) => (
+                        <Pre>{record.boundaryValue || 'MAXVALUE'}</Pre>
+                      ),
                       ellipsis: true,
                     },
                     {
@@ -536,6 +885,7 @@ export default function DBTableStructure() {
                   bordered
                   pagination={false}
                   dataSource={tableInfo.partition.partitions}
+                  rowKey="name"
                   columns={[
                     {
                       title: t('data_manager.name'),
@@ -548,6 +898,7 @@ export default function DBTableStructure() {
                       dataIndex: 'values',
                       key: 'values',
                       ellipsis: true,
+                      render: (v) => <Pre>{v}</Pre>,
                     },
                     {
                       title: t('data_manager.view_db.operation'),
@@ -731,7 +1082,7 @@ export default function DBTableStructure() {
                                 )
                                   .map((c) => c.name)
                                   .map((d, i) => (
-                                    <Option key={d + i} value={d}>
+                                    <Option key={d} value={d}>
                                       {d}
                                     </Option>
                                   ))}
@@ -772,6 +1123,9 @@ export default function DBTableStructure() {
           )}
         </Form>
       </Modal>
+      {addConstraintModal.render()}
+      {addListPartitionModal.render()}
+      {addRangePartitionModal.render()}
     </>
   )
 }

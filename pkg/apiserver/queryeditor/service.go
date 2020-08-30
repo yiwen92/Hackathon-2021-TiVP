@@ -69,6 +69,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	endpoint.Use(utils.MWForbidByExperimentalFlag(s.params.Config.EnableExperimental))
+	endpoint.GET("/table_status", s.tableStatusHandler)
 	endpoint.POST("/run", s.runHandler)
 	endpoint.POST("/bulk_export_csv", s.bulkExportCSVHandler)
 }
@@ -273,6 +274,36 @@ func (s *Service) runHandler(c *gin.Context) {
 		ExecutionMs: elapsedTime.Milliseconds(),
 		ActualRows:  len(rows),
 	})
+}
+
+type TableStatusRequest struct {
+	Db    string `json:"db" form:"db"`
+	Table string `json:"table" form:"table"`
+}
+
+// @ID queryEditorQueryTableStatus
+// @Summary Query table status
+// @Param q query TableStatusRequest true "Query"
+// @Router /query_editor/table_status [get]
+// @Security JwtAuth
+// @Success 200 {object} utils.APIEmptyResponse
+// @Failure 400 {object} utils.APIError "Bad request"
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 403 {object} utils.APIError "Experimental feature not enabled"
+func (s *Service) tableStatusHandler(c *gin.Context) {
+	var req TableStatusRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		utils.MakeInvalidRequestErrorFromError(c, err)
+		return
+	}
+
+	data, err := s.params.TiDBClient.SendGetRequest(fmt.Sprintf("/schema/%s/%s", req.Db, req.Table))
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.Data(http.StatusOK, "application/json", data)
 }
 
 func escapeId(s string) string {
