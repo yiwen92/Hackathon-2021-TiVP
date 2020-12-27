@@ -20,6 +20,8 @@ import LayoutSignIn from '@dashboard/layout/signin'
 import AppUserProfile from '@lib/apps/UserProfile/index.meta'
 import AppOverview from '@lib/apps/Overview/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
+import AppMetrics from '@lib/apps/Metrics/index.meta'
+import AppAlerts from '@lib/apps/Alerts/index.meta'
 import AppKeyViz from '@lib/apps/KeyViz/index.meta'
 import AppStatement from '@lib/apps/Statement/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
@@ -28,6 +30,8 @@ import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
 import AppConfiguration from '@lib/apps/Configuration/index.meta'
+import AppDataManager from '@lib/apps/DataManager/index.meta'
+import AppUsersManager from '@lib/apps/UsersManager/index.meta'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -99,6 +103,8 @@ async function main() {
     .register(AppUserProfile)
     .register(AppOverview)
     .register(AppClusterInfo)
+    .register(AppMetrics)
+    .register(AppAlerts)
     .register(AppKeyViz)
     .register(AppStatement)
     .register(AppSlowQuery)
@@ -107,6 +113,8 @@ async function main() {
     .register(AppInstanceProfiling)
     .register(AppQueryEditor)
     .register(AppConfiguration)
+    .register(AppDataManager)
+    .register(AppUsersManager)
 
   if (routing.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter())

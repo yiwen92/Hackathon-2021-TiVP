@@ -22,6 +22,7 @@ import ErrorBar from '../ErrorBar'
 import { addTranslationResource } from '@lib/utils/i18n'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import New from './new'
 
 export type GraphType = 'bar' | 'line'
 
@@ -300,3 +301,5 @@ export default function MetricChart({
     </Card>
   )
 }
+
+MetricChart.New = New

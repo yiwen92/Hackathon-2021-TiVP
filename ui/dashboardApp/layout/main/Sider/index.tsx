@@ -1,5 +1,10 @@
 import React, { useState, useMemo } from 'react'
-import { ExperimentOutlined, BugOutlined } from '@ant-design/icons'
+import {
+  BugOutlined,
+  CompassOutlined,
+  AppstoreOutlined,
+  SettingOutlined,
+} from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
 import { useEventListener } from '@umijs/hooks'
@@ -72,38 +77,74 @@ function Sider({
     </Menu.SubMenu>
   )
 
-  const experimentalSubMenuItems = [
-    useAppMenuItem(registry, 'query_editor'),
-    useAppMenuItem(registry, 'configuration'),
+  let basicSubMenuItems = [
+    useAppMenuItem(registry, 'overview'),
+    useAppMenuItem(registry, 'cluster_info'),
   ]
-  const experimentalSubMenu = (
+  const experimentalBasicMenuItems = [
+    useAppMenuItem(registry, 'metrics'),
+    useAppMenuItem(registry, 'alerts'),
+  ]
+  basicSubMenuItems = [...basicSubMenuItems, ...experimentalBasicMenuItems]
+  const basicSubMenu = (
     <Menu.SubMenu
-      key="experimental"
+      key="basic"
       title={
         <span>
-          <ExperimentOutlined />
-          <span>{t('nav.sider.experimental')}</span>
+          <AppstoreOutlined />
+          <span>{t('nav.sider.basic')}</span>
         </span>
       }
     >
-      {experimentalSubMenuItems}
+      {basicSubMenuItems}
     </Menu.SubMenu>
   )
 
-  const menuItems = [
-    useAppMenuItem(registry, 'overview'),
-    useAppMenuItem(registry, 'cluster_info'),
+  let manageSubMenuItems = [
+    useAppMenuItem(registry, 'query_editor'),
+    useAppMenuItem(registry, 'data_manager'),
+    useAppMenuItem(registry, 'dbusers_manager'),
+    useAppMenuItem(registry, 'configuration'),
+  ]
+  const manageSubMenu = (
+    <Menu.SubMenu
+      key="manage"
+      title={
+        <span>
+          <SettingOutlined />
+          <span>{t('nav.sider.manage')}</span>
+        </span>
+      }
+    >
+      {manageSubMenuItems}
+    </Menu.SubMenu>
+  )
+
+  let manageItems: any[] = []
+  manageItems = [manageSubMenu]
+
+  const diagnoseSubMenuItems = [
+    useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
-    useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
-    debugSubMenu,
   ]
+  const diagnoseSubMenu = (
+    <Menu.SubMenu
+      key="diagnose"
+      title={
+        <span>
+          <CompassOutlined />
+          <span>{t('nav.sider.diagnose')}</span>
+        </span>
+      }
+    >
+      {diagnoseSubMenuItems}
+    </Menu.SubMenu>
+  )
 
-  if (info?.enable_experimental) {
-    menuItems.push(experimentalSubMenu)
-  }
+  let menuItems = [basicSubMenu, ...manageItems, diagnoseSubMenu, debugSubMenu]
 
   let displayName = currentLogin?.username ?? '...'
   if (currentLogin?.is_shared) {
@@ -123,7 +164,7 @@ function Sider({
     if (defaultCollapsed) {
       return []
     } else {
-      return ['debug', 'experimental']
+      return ['basic', 'manage', 'diagnose', 'debug']
     }
   }, [defaultCollapsed])
 

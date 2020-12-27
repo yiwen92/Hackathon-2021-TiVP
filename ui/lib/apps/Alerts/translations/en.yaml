@@ -1,0 +1,113 @@
+alerts:
+  nav_title: Alerts
+  toolbar:
+    channels: Configure Notifications
+    config: Configure Silences
+    refresh: Refresh
+  column:
+    pending: Pending Alert
+    level: Level
+    name: Name
+    instances: Alert Instances
+  channel_list_page:
+    nav:
+      back: All Alerts
+      title: Notification Channels
+    toolbar:
+      refresh: Refresh
+      create: Create Channel
+      simulate_alert: Simulate Alert
+      simulate_alert_fire: Trigger Fire Alert
+      simulate_alert_resolve: Trigger Resolve Alert
+      simulate_alert_success: Trigger Succeeded
+    column:
+      id: ID
+      type: Type
+      enabled: Enabled?
+      trigger_at_resolve: Resolve?
+      trigger_at_resolve_tooltip: Whether notification should be sent when alert is resolved
+      name: Name
+  channel_create_page:
+    nav:
+      back: Notification Channels
+      title: Create Notification Channel
+    create_success: Notification Channel Created
+  channel_update_page:
+    nav:
+      back: Notification Channels
+      title: Update Notification Channel
+    update_success: Notification Channel Updated
+    delete_confirm: Are you sure want to delete this notification channel?
+    delete_success: Notification Channel Deleted
+  channel_form:
+    create: Create
+    update: Update
+    delete: Delete
+    cancel: Cancel
+    reset: Reset to Defaults
+    enabled: Enabled
+    trigger_at_resolve: Send notificaton when alert is resolved
+    type: Type
+    name: Name
+    type_values:
+      web_hook: Web Hook
+      email: Email
+      aliyun_sms: Aliyun SMS
+      wechat_work: WeChat Work
+    web_hook:
+      url: Webhook URL
+      url_tooltip: A POST request will be sent to this URL
+    email:
+      smtp_host: SMTP Host
+      smtp_port: SMTP Port
+      smtp_user: SMTP Username
+      smtp_pass: SMTP Password
+      from: From
+      to: To
+      to_tooltip: To specify multiple receivers, separate by comma.
+      fire_subject_template: Mail Subject when alert is triggered
+      fire_body_template: Mail Body when alert is triggered
+      resolve_subject_template: Mail Subject when alert is resolved
+      resolve_body_template: Mail Body when alert is resolved
+      default_fire_subject_template: |-
+        TiDB Cluster {{labels.cluster}} Service Alert ({{labels.level}})
+      default_fire_body_template: |-
+        Cluster name: {{labels.cluster}}
+        Alert name: {{labels.alertname}}
+        Level: {{labels.level}}
+        Instance: {{labels.instance}}
+      default_resolve_subject_template: |-
+        TiDB Cluster {{labels.cluster}} Service Recovered ({{labels.level}})
+      default_resolve_body_template: |-
+        Cluster name: {{labels.cluster}}
+        Recovered alert name: {{labels.alertname}}
+        Level: {{labels.level}}
+        Instance: {{labels.instance}}
+    aliyun_sms:
+      help: >
+        For helps to fill the fields below, see [Aliyun SMS Documentation](https://help.aliyun.com/document_detail/101414.html)
+      access_key_id: AccessKeyId
+      access_secret: AccessSecret
+      phone_numbers: PhoneNumbers
+      sign_name: SignName
+      fire_template_code: TemplateCode (Service Alert)
+      resolve_template_code: TemplateCode (Service Recovered)
+    wechat_work:
+      help: >
+        Please refer to [WeChat Work Documentation](https://work.weixin.qq.com/help?doc_id=13376) for retrieving the Webhook URL.
+      web_hook_url: WeChat Webhook URL
+      fire_content_template: Message to send when alert is triggered
+      resolve_content_template: Message to send when alert is resolved
+      mention_all: '@All when sending the message'
+      default_fire_content_template: |-
+        TiDB Cluster {{labels.cluster}} Service Alert
+
+        Alert name: {{labels.alertname}}
+        Level: {{labels.level}}
+        Instance: {{labels.instance}}
+      default_resolve_content_template: |-
+        TiDB Cluster {{labels.cluster}} Service Recovered
+
+        Recovered alert name: {{labels.alertname}}
+        Level: {{labels.level}}
+        Instance: {{labels.instance}}

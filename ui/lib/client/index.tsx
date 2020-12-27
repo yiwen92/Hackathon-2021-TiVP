@@ -106,7 +106,10 @@ function initAxios() {
 
 function init() {
   let apiPrefix
-  if (process.env.NODE_ENV === 'development') {
+  if (
+    process.env.NODE_ENV === 'development' ||
+    process.env.NODE_ENV === 'test'
+  ) {
     if (process.env.REACT_APP_DASHBOARD_API_URL) {
       apiPrefix = `${process.env.REACT_APP_DASHBOARD_API_URL}/dashboard`
     } else {
@@ -130,6 +133,15 @@ function init() {
   )
 
   save(apiUrl, dashboardClient)
+}
+
+export async function authUsingDefaultCredential() {
+  const r = await getInstance().userLogin({
+    username: 'root',
+    password: '',
+    type: 0,
+  })
+  auth.setAuthToken(r.data.token)
 }
 
 init()

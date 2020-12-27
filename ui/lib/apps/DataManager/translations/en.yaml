@@ -1,0 +1,113 @@
+data_manager:
+  nav_title: Data Manager
+
+  all_databases: All Databases
+  db_name_column: Database Name
+  create_db: Create Database
+  db_name_input: Database Name
+  delete_db_title: Delete Database
+
+  all_tables: All Tables
+  create_table: Create Table
+  create_view: Create View
+  view_definition: View Definition
+
+  edit: Edit
+  columns: Columns
+  field_type: Field Type
+  length: Length
+  decimal: Decimal
+  not_null: Not Null
+  unsigned: Unsigned
+  default_value: Default Value
+  auto_increment: Auto Increment
+  primary_key: Primary Key
+  add_column: Add Column
+  delete_column: Delete Column
+  insert_column: Insert Column
+  insert_column_at_head: Insert Column at Head
+  insert_column_at_tail: Insert Column at Tail
+
+  column_constraint: Column Constraint
+  table_constraint: Table Constraint
+  add_table_constraint: Add Table Constraint
+  constraint_expr: Constraint Expression
+  delete_constraint: Delete Constraint
+  constraints: Constraints
+  partition_table: Partition Table
+  add_partition_table: Add Partition Table
+  partition_type: Partition Type
+  partition_expr: Expression
+  add_partition: Add Partition
+  delete_partition: Delete Partition
+  partitions: Partitions
+  partition_value: Value
+  number_of_partitions: Number Of Partitions
+
+  create: Create
+
+  indexes: Indexes
+  add_index: Add Index
+  delete_index: Delete Index
+
+  create_success_txt: Created Successfully
+  create_failed_txt: Failed to create
+  update_success_txt: Successfully updated
+  update_failed_txt: Failed to update
+  confirm_delete_txt: Confirm to delete
+  delete_success_txt: Failed to delete
+  delete_failed_txt: Successfully deleted
+
+  please_input: Please input
+  action: Actions
+  name: Name
+  type: Type
+  view_db:
+    name: Name
+    type: Type
+    createTime: Create At
+    collation: Collation
+    comment: Comment
+    operation: Operation
+    op_structure: View Structure
+    op_rename: Rename
+    op_drop: Drop Table
+    op_drop_view: Drop View
+    op_export: Export
+  db_structure:
+    op_insert: Insert Column After Current Column
+    op_drop: Drop Column
+  comment: Comment
+  submit: Submit
+  delete: Delete
+  confirm: Confirm
+  cancel: Cancel
+  create_view_modal:
+    title: Create View
+    view_def: View Definition
+
+  head_back_all_databases: All databases
+  head_back_all_tables: All tables
+  select_table:
+    insert_row: Insert Row
+    edit_row: Edit Row
+    delete_row: Delete Row
+    delete_row_confirm_txt: Confirm to delete this row?
+    is_empty_warning: Can not be empty
+    pagination_tips: This table only display {{ allRowsBeforeTruncation }} rows, can use SQL statement to query more
+    uneditable_warning: This table cannot be edited from UI, please use SQL statement
+
+  export_database_short: Export
+  export_database: Export this database as CSV file
+  dump_database_short: Dump
+  dump_database: Dump this database as SQL file
+  export_tables:
+    title: Export as CSV
+    export_success: Export Succeeded
+    export_download: Download
+    export_failed: Export Failed
+    form:
+      tables: Tables
+      tables_placeholder: Select tables to export
+      select_all: Select All Tables
+      submit: Start Exporting

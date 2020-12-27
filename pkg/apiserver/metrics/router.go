@@ -24,6 +24,7 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
 
 type QueryRequest struct {
@@ -40,10 +41,17 @@ type QueryResponse struct {
 
 func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/metrics")
+	endpoint.POST("/alert_webhook", s.alertManagerWebHook)
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/query", s.queryMetrics)
 	endpoint.GET("/prom_address", s.getPromAddressConfig)
 	endpoint.PUT("/prom_address", s.putCustomPromAddress)
+	endpoint.GET("/alerts", s.alertsHandler)
+	endpoint.GET("/alert_channels/list", s.listAlertChannels)
+	endpoint.PUT("/alert_channels/create", s.createAlertChannel)
+	endpoint.GET("/alert_channels/get/:id", s.getAlertChannel)
+	endpoint.POST("/alert_channels/update", s.updateAlertChannel)
+	endpoint.DELETE("/alert_channels/delete/:id", s.deleteAlertChannel)
 }
 
 // @Summary Query metrics
@@ -161,4 +169,53 @@ func (s *Service) putCustomPromAddress(c *gin.Context) {
 	c.JSON(http.StatusOK, PutCustomPromAddressResponse{
 		NormalizedAddr: addr,
 	})
+}
+
+// @ID metricsGetAlerts
+// @Summary Get alerts
+// @Description Get alerts
+// @Produce json
+// @Success 200 {object} QueryResponse
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Security JwtAuth
+// @Router /metrics/alerts [get]
+func (s *Service) alertsHandler(c *gin.Context) {
+	pi, err := topology.FetchPrometheusTopology(s.lifecycleCtx, s.params.EtcdClient)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if pi == nil {
+		_ = c.Error(ErrPrometheusNotFound.NewWithNoMessage())
+		return
+	}
+
+	// FIXME: Reduce duplication
+
+	uri := fmt.Sprintf("http://%s:%d/api/v1/rules", pi.IP, pi.Port)
+	promReq, err := http.NewRequestWithContext(s.lifecycleCtx, http.MethodGet, uri, nil)
+	if err != nil {
+		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to build Prometheus request"))
+		return
+	}
+
+	promResp, err := s.params.HTTPClient.WithTimeout(defaultPromQueryTimeout).Do(promReq)
+	if err != nil {
+		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to send requests to Prometheus"))
+		return
+	}
+
+	defer promResp.Body.Close()
+	if promResp.StatusCode != http.StatusOK {
+		_ = c.Error(ErrPrometheusQueryFailed.New("failed to query Prometheus"))
+		return
+	}
+
+	body, err := ioutil.ReadAll(promResp.Body)
+	if err != nil {
+		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to read Prometheus query result"))
+		return
+	}
+
+	c.Data(promResp.StatusCode, promResp.Header.Get("content-type"), body)
 }

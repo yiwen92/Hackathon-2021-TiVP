@@ -15,14 +15,17 @@ package metrics
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/joomcode/errorx"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/atomic"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
@@ -43,6 +46,7 @@ type ServiceParams struct {
 	HTTPClient *httpc.Client
 	EtcdClient *clientv3.Client
 	PDClient   *pd.Client
+	LocalStore *dbstore.DB
 }
 
 type Service struct {
@@ -55,6 +59,10 @@ type Service struct {
 
 func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
 	s := &Service{params: p}
+
+	if err := autoMigrate(p.LocalStore); err != nil {
+		log.Fatal("Failed to initialize database", zap.Error(err))
+	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
