@@ -31,7 +31,7 @@ require (
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12
 	github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
-	github.com/pingcap/log v0.0.0-20210906054005-afc726e70354
+	github.com/pingcap/log v0.0.0-20210625125904-98ed8e2eb1c7
 	github.com/rs/cors v1.7.0
 	github.com/shhdgit/testfixtures/v3 v3.6.2-0.20211219171712-c4f264d673d3
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
@@ -45,7 +45,7 @@ require (
 	go.uber.org/atomic v1.9.0
 	go.uber.org/fx v1.12.0
 	go.uber.org/goleak v1.1.10
-	go.uber.org/zap v1.19.0
+	go.uber.org/zap v1.16.0
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1
