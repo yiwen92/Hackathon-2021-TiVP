@@ -1,90 +1,120 @@
-# TiDB Dashboard
+<!--
+This is a template for TiDB's change proposal process, documented [here](./README.md).
+-->
 
-[![GitHub license](https://img.shields.io/github/license/pingcap/tidb-dashboard?style=flat-square)](https://github.com/pingcap/tidb-dashboard/blob/master/LICENSE)
+# RFC: <!-- Title --> TiVP - Visual Plan For TiDB
 
-TiDB Dashboard is a Web UI for monitoring, diagnosing and managing the TiDB cluster.
+- Author(s): [@92hackers](https://github.com/92hackers), [@chrysan](https://github.com/chrysan), [@Tammyxia](https://github.com/Tammyxia), [@yiwen92](https://github.com/yiwen92) (in alphabetical order)
+- Last updated: 2021-12-27 <!-- Date -->
+- Discussion at: <!-- https://github.com/pingcap/tidb/issues/XXX -->
+- Project at: https://github.com/yiwen92/TiDB-Hackathon-2021-TiVP
 
-## Documentation
+## 项目介绍
 
-- [Product User Manual (English)](https://docs.pingcap.com/tidb/stable/dashboard-intro)
-- [Product User Manual (Chinese)](https://docs.pingcap.com/zh/tidb/stable/dashboard-intro)
-- [FAQ (English)](https://docs.pingcap.com/tidb/stable/dashboard-faq)
-- [FAQ (Chinese)](https://docs.pingcap.com/zh/tidb/stable/dashboard-faq)
+<!--
+A short summary of the proposal:
+- What is the issue that the proposal aims to solve?
+- What needs to be done in this proposal?
+- What is the impact of this proposal?
+-->
 
-## Question, Suggestion
+TiVP is a Visual Plan for TiDB SQL explaination integreted with Dashboard.
+该项目旨在将执行计划做可视化。
 
-Feel free to [open GitHub issues](https://github.com/pingcap/tidb-dashboard/issues/new/choose)
-for questions, support and suggestions.
+## 背景&动机
 
-You may also consider join our community chat in the Slack channel [#sig-diagnosis].
+<!--
+An introduction of the necessary background and the problem being solved by the proposed change:
+- The drawback of the current feature and the corresponding use case
+- The expected outcome of this proposal.
+-->
 
-For Chinese users, you can visit the PingCAP official user forum [AskTUG.com] to make life easier.
+随着 TiDB 被运用到更加复杂的分析场景，sql 语句会变得异常复杂，由此 explain 出来的执行计划（https://docs.pingcap.com/zh/tidb/stable/explain-walkthrough/#使用-explain-解读执行计划） 就会令人费解，影响性能调优效率。
 
-## Getting Started
+当使用者对着 explain 生成的复杂计划抓耳挠腮的时候，我们更希望化繁为简，用可视化的方式将每一条复杂 sql 语句的执行流程清楚地展示出来，在帮助技术人员快速了解 SQL Plan 的同时给予智能优化的提示。
 
-The most easy way to use TiDB Dashboard with an existing TiDB cluster is to use the one embedded
-into [PD]: <http://127.0.0.1:2379/dashboard>. You need PD master branch or 4.0+ version to use
-TiDB Dashboard.
+## 项目设计
 
-Note: The TiDB Dashboard inside PD may be not up to date. To play with latest TiDB Dashboard, build
-it from source (see next section).
+<!--
+A precise statement of the proposed change:
+- The new named concepts and a set of metrics to be collected in this proposal (if applicable)
+- The overview of the design.
+- How it works?
+- What needs to be changed to implement this design?
+- What may be positively influenced by the proposed change?
+- What may be negatively impacted by the proposed change?
+-->
 
-## Contributing & Developing
+收集数据库侧 SQL 执行信息，基于 TiDB 当前管理工具 Dashboard，开发一个显示界面，用于图像化展示 SQL 的执行计划，帮助使用者快速分析 SQL 语句和执行逻辑，快速定位以及解决问题
 
-Checkout our [help wanted issues](https://github.com/pingcap/tidb-dashboard/issues?q=is%3Aopen+label%3Astatus%2Fhelp-wanted+sort%3Aupdated-desc)
-for a list of recommended tasks, in which we have also marked the difficulty level.
+主要功能：
+- 从数据库运行时中收集必要信息，如执行计划（包括逻辑计划和物理计划）、各步骤运行耗时、访问信息（estRows 和 actRows）等
+- 将执行计划的算子和代价通过树状结构进行可视化展现，明确显示耗时最长或代价最大的执行路径
+- 集成于 TiDB 现有的管理工具 Dashboard
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for a detailed step-by-step contributing guide, or steps to
-build TiDB Dashboard from source.
+高级功能：
+- Optimize Trace？
+- SQL 助手：智能 Hint 和改写？
+- 统计信息可视化？
 
-If you need any help, feel free to community chat in the Slack channel [#sig-diagnosis].
+图片待补充
 
-Thank you to all the people who already contributed to TiDB Dashboard!
+## Rationale
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tr>
-    <td align="center"><a href="https://github.com/Fullstop000"><img src="https://avatars1.githubusercontent.com/u/12471960?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="http://rleungx.github.io"><img src="https://avatars3.githubusercontent.com/u/35896542?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/zzh-wisdom"><img src="https://avatars2.githubusercontent.com/u/52516344?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/STRRL"><img src="https://avatars0.githubusercontent.com/u/20221408?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/SSebo"><img src="https://avatars0.githubusercontent.com/u/5784607?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://yisaer.github.io/"><img src="https://avatars1.githubusercontent.com/u/13427348?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/gauss1314"><img src="https://avatars2.githubusercontent.com/u/3862518?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/leiysky"><img src="https://avatars2.githubusercontent.com/u/22445410?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/niedhui"><img src="https://avatars0.githubusercontent.com/u/66329?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://weihanglo.tw/"><img src="https://avatars2.githubusercontent.com/u/14314532?v=4" width="50px;" alt=""/></a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/yikeke"><img src="https://avatars1.githubusercontent.com/u/40977455?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/qxhy123"><img src="https://avatars2.githubusercontent.com/u/518969?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="http://www.rustin.cn"><img src="https://avatars0.githubusercontent.com/u/29879298?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/ericsyh"><img src="https://avatars3.githubusercontent.com/u/10498732?v=4" width="50px;" alt=""/></a></td>
-  </tr>
-</table>
+<!--
+A discussion of alternate approaches and the trade-offs, advantages, and disadvantages of the specified approach:
+- How other systems solve the same issue?
+- What other designs have been considered and what are their disadvantages?
+- What is the advantage of this design compared with other designs?
+- What is the disadvantage of this design?
+- What is the impact of not doing this?
+-->
+相比于自定义一套独立的 WebUI 界面或从头设计一套 TiDB 数据库管理套件，我们计划和 Dashboard 做集成，因为 Dashboard 方便易用，自动部署，官方维护，风格统一。
 
-<!-- markdownlint-enable -->
-<!-- prettier-ignore-end -->
+## Compatibility and Migration Plan
 
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+<!--
+A discussion of the change with regard to the compatibility issues:
+- Does this proposal make TiDB not compatible with the old versions?
+- Does this proposal make TiDB not compatible with TiDB tools?
+    + [BR](https://github.com/pingcap/br)
+    + [DM](https://github.com/pingcap/dm)
+    + [Dumpling](https://github.com/pingcap/dumpling)
+    + [TiCDC](https://github.com/pingcap/ticdc)
+    + [TiDB Binlog](https://github.com/pingcap/tidb-binlog)
+    + [TiDB Lightning](https://github.com/pingcap/tidb-lightning)
+- If the existing behavior will be changed, how will we phase out the older behavior?
+- Does this proposal make TiDB more compatible with MySQL?
+- What is the impact(if any) on the data migration:
+    + from MySQL to TiDB
+    + from TiDB to MySQL
+    + from old TiDB cluster to new TiDB cluster
+-->
+冇。
 
-## Architecture
+## Implementation
 
-This repository contains both Dashboard HTTP API and Dashboard UI. Dashboard HTTP API is placed in
-`pkg/` directory, written in Golang. Dashboard UI is placed in `ui/` directory, powered by React.
+<!--
+A detailed description for each step in the implementation:
+- Does any former steps block this step?
+- Who will do it?
+- When to do it?
+- How long it takes to accomplish it?
+-->
+TBD。
 
-TiDB Dashboard can also be integrated into PD, as follows:
+## Testing Plan
 
-![](etc/arch_overview.svg)
+<!--
+A brief description on how the implementation will be tested. Both integration test and unit test should consider the following things:
+- How to ensure that the implementation works as expected?
+- How will we know nothing broke?
+-->
+演示。
 
-## License
+## Open issues (if applicable)
 
-[Apache License](/LICENSE)
-
-Copyright 2020 PingCAP, Inc.
-
-[pd]: https://github.com/pingcap/pd
-[#sig-diagnosis]: https://slack.tidb.io/invite?team=tidb-community&channel=sig-diagnosis&ref=github_dashboard_repo
-[asktug.com]: https://asktug.com/
+<!--
+A discussion of issues relating to this proposal for which the author does not know the solution. This section may be omitted if there are none.
+-->
+冇。
