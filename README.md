@@ -19,7 +19,7 @@ A short summary of the proposal:
 -->
 
 TiVP is a Visual Plan for TiDB SQL explaination integreted with Dashboard.
-该项目旨在将执行计划做可视化。
+该项目旨在可视化 TiDB 生成的执行计划。
 
 ## 背景&动机
 
@@ -29,9 +29,9 @@ An introduction of the necessary background and the problem being solved by the 
 - The expected outcome of this proposal.
 -->
 
-随着 TiDB 被运用到更加复杂的分析场景，sql 语句会变得异常复杂，由此 explain 出来的执行计划（https://docs.pingcap.com/zh/tidb/stable/explain-walkthrough/#使用-explain-解读执行计划） 就会令人费解，影响性能调优效率。
+随着 TiDB 被运用到更加复杂的分析场景，SQL 语句会变得异常复杂，由此 explain 出来的执行计划（https://docs.pingcap.com/zh/tidb/stable/explain-walkthrough/#使用-explain-解读执行计划） 就会令人费解，影响性能调优效率。
 
-当使用者对着 explain 生成的复杂计划抓耳挠腮的时候，我们更希望化繁为简，用可视化的方式将每一条复杂 sql 语句的执行流程清楚地展示出来，在帮助技术人员快速了解 SQL Plan 的同时给予智能优化的提示。
+当开发者对着 explain 生成的复杂执行计划抓耳挠腮的时候，我们更希望化繁为简，用可视化的方式将每一条复杂 SQL 语句的执行流程清楚地展示出来，在帮助开发者快速了解 SQL Plan 的同时给予智能优化的提示。
 
 ## 项目设计
 
@@ -45,7 +45,7 @@ A precise statement of the proposed change:
 - What may be negatively impacted by the proposed change?
 -->
 
-收集数据库侧 SQL 执行信息，基于 TiDB 当前管理工具 Dashboard，开发一个显示界面，用于图像化展示 SQL 的执行计划，帮助使用者快速分析 SQL 语句和执行逻辑，快速定位以及解决问题
+收集数据库侧 SQL 执行信息，基于 TiDB 当前管理工具 Dashboard，开发一个显示界面，用于图像化展示 SQL 的执行计划，帮助开发者快速分析 SQL 语句及其执行逻辑，快速定位以及解决问题
 
 主要功能：
 - 从数据库运行时中收集必要信息，如执行计划（包括逻辑计划和物理计划）、各步骤运行耗时、访问信息（estRows 和 actRows）等
@@ -57,7 +57,51 @@ A precise statement of the proposed change:
 - SQL 助手：智能 Hint 和改写？
 - 统计信息可视化？
 
-图片待补充
+### Example
+
+#### SQL 语句
+
+```sql
+SELECT rel_users_exams.user_username AS rel_users_exams_user_username,
+       rel_users_exams.exam_id AS rel_users_exams_exam_id,
+       rel_users_exams.started_at AS rel_users_exams_started_at,
+       rel_users_exams.finished_at AS rel_users_exams_finished_at,
+       answer_1.id AS answer_1_id,
+       answer_1.text AS answer_1_text,
+       answer_1.correct AS answer_1_correct,
+       answer_1.fraction AS answer_1_fraction,
+       answer_1.question_id AS answer_1_question_id,
+       question_1.id AS question_1_id,
+       question_1.title AS question_1_title,
+       question_1.text AS question_1_text,
+       question_1.file AS question_1_file,
+       question_1.type AS question_1_type,
+       question_1.source AS question_1_source,
+       question_1.exam_id AS question_1_exam_id,
+       exam_1.id AS exam_1_id,
+       exam_1.title AS exam_1_title,
+       exam_1.date_from AS exam_1_date_from,
+       exam_1.date_to AS exam_1_date_to,
+       exam_1.created AS exam_1_created,
+       exam_1.created_by_ AS exam_1_created_by_,
+       exam_1.duration AS exam_1_duration,
+       exam_1.success_threshold AS exam_1_success_threshold,
+       exam_1.published AS exam_1_published
+FROM rel_users_exams LEFT OUTER
+JOIN exam AS exam_1
+    ON exam_1.id = rel_users_exams.exam_id LEFT OUTER
+JOIN question AS question_1
+    ON exam_1.id = question_1.exam_id LEFT OUTER
+JOIN answer AS answer_1
+    ON question_1.id = answer_1.question_id
+WHERE rel_users_exams.user_username = %(param_1)s
+        AND rel_users_exams.exam_id = %(param_2)s
+ORDER BY  question_1.id;
+```
+
+#### 对应的可视化渲染结果
+
+!['./execution-plan.png'](execution-plan.png)
 
 ## Rationale
 
@@ -90,7 +134,7 @@ A discussion of the change with regard to the compatibility issues:
     + from TiDB to MySQL
     + from old TiDB cluster to new TiDB cluster
 -->
-冇。
+无。
 
 ## Implementation
 
@@ -101,7 +145,9 @@ A detailed description for each step in the implementation:
 - When to do it?
 - How long it takes to accomplish it?
 -->
-TBD。
+使用 `EXPLAIN` SQL 语句可查看 TiDB 执行某条语句时选用的执行计划，后端服务会将生成的执行计划结果格式化为 JSON 格式的数据, 通过接口返回给 Dashboard 前端。
+
+Dashboard 前端解析返回的 JSON 数据，根据预设的字段类型和和图表的映射关系，渲染为图表。
 
 ## Testing Plan
 
@@ -117,4 +163,4 @@ A brief description on how the implementation will be tested. Both integration t
 <!--
 A discussion of issues relating to this proposal for which the author does not know the solution. This section may be omitted if there are none.
 -->
-冇。
+无。
