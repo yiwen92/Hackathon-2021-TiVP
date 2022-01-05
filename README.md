@@ -6,7 +6,7 @@ This is a template for TiDB's change proposal process, documented [here](./READM
 
 - Author(s): [@92hackers](https://github.com/92hackers), [@chrysan](https://github.com/chrysan), [@Tammyxia](https://github.com/Tammyxia), [@yiwen92](https://github.com/yiwen92) (in alphabetical order)
 - Last updated: 2022-01-05 <!-- Date -->
-- Discussion at: <!-- https://github.com/pingcap/tidb/issues/XXX -->
+- Discussion at: online meeting
 - Project at: https://github.com/yiwen92/TiDB-Hackathon-2021-TiVP
 
 ## 项目介绍
@@ -52,7 +52,7 @@ A precise statement of the proposed change:
 - 将执行计划的算子和代价通过树状结构进行可视化展现，明确显示耗时最长或代价最大的执行路径
 - 集成于 TiDB 现有的管理工具 Dashboard，或以独立的可交互的展示界面就行演示
 
-高级功能：
+未来扩展：
 - Optimize Trace？呈现优化器生成计划的逻辑
 - SQL 助手：智能 Hint 和改写？基于规则给予 SQL Hint 提示
 - 统计信息可视化？帮助定位统计信息不准确问题
@@ -100,7 +100,75 @@ ORDER BY  question_1.id;
 ```
 #### json 格式的执行计划
 
-!['./execution-plan.json'](execution-plan.json)
+```explain plan
+[
+  {
+    "Plan": {
+      "Node ID": "Sort_6",
+      "Estimated Rows": 2.94,
+      "Actual Rows": 4,
+      "task": "root",
+      "access object": "",
+      "operator info": "tpch50.lineitem.l_returnflag, tpch50.lineitem.l_linestatus",
+      "execution info": "time:13.4s, loops:2",
+      "disk": "0 Bytes",
+      "memory": "45.4 KB",
+      "Plans": [
+        {
+          "Node ID": "Projection_8",
+          "Plan Rows": 2.94,
+          "Actual Rows": 4,
+          "task": "root",
+          "access object": "",
+          "operator info": "tpch50.lineitem.l_returnflag, tpch50.lineitem.l_linestatus, Column#18, Column#19, Column#20, Column#21, Column#22, Column#23, Column#24, Column#25",
+          "execution info": "time:13.4s, loops:5, Concurrency:OFF",
+          "disk": "N/A",
+          "memory": "11.4 KB",
+          "Plans": [
+            {
+              "Node ID": "TableReader_15",
+              "Plan Rows": 293818698.60,
+              "Actual Rows": 293936693,
+              "task": "root",
+              "access object": "",
+              "operator info": "",
+              "execution info": "time:13.4s, loops:4, cop_task: {num: 655, max: 2.83s, min: 574.8µs, avg: 595ms, p95: 1.65s, max_proc_keys: 465701, p95_proc_keys: 458343, tot_proc: 5m50.1s, tot_wait: 24.2s, rpc_num: 655, rpc_time: 6m29.7s, copr_cache_hit_ratio: 0.55} ",
+              "disk": "N/A",
+              "memory": "6.34 KB",
+              "Plans": [
+                {
+                  "Node ID": "Selection_13",
+                  "Plan Rows": 293818698.60,
+                  "Actual Rows": 293936693,
+                  "task": "cop[tikv]",
+                  "access object": "",
+                  "operator info": "le(tpch50.lineitem.l_shipdate, 1998-08-15)",
+                  "execution info": "tikv_task:{proc max:893ms, min:270ms, p80:576ms, p95:676ms, iters:293267, tasks:655}",
+                  "disk": "N/A",
+                  "memory": "N/A",
+                  "Plans": [
+                    {
+                      "Node ID": "TableFullScan_12",
+                      "Plan Rows": 2.94,
+                      "Actual Rows": 2620,
+                      "task": "cop[tikv]",
+                      "access object": "table:lineitem",
+                      "operator info": "keep order:false",
+                      "execution info": "tikv_task:{proc max:871ms, min:252ms, p80:555ms, p95:652ms, iters:293267, tasks:655}",
+                      "disk": "N/A",
+                      "memory": "N/A"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]
+```
 
 #### 对应的可视化渲染结果（效果模拟图）
 
