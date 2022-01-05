@@ -5,7 +5,7 @@ This is a template for TiDB's change proposal process, documented [here](./READM
 # RFC: <!-- Title --> TiVP - Visual Plan For TiDB
 
 - Author(s): [@92hackers](https://github.com/92hackers), [@chrysan](https://github.com/chrysan), [@Tammyxia](https://github.com/Tammyxia), [@yiwen92](https://github.com/yiwen92) (in alphabetical order)
-- Last updated: 2022-01-04 <!-- Date -->
+- Last updated: 2022-01-05 <!-- Date -->
 - Discussion at: <!-- https://github.com/pingcap/tidb/issues/XXX -->
 - Project at: https://github.com/yiwen92/TiDB-Hackathon-2021-TiVP
 
@@ -98,6 +98,9 @@ WHERE rel_users_exams.user_username = %(param_1)s
         AND rel_users_exams.exam_id = %(param_2)s
 ORDER BY  question_1.id;
 ```
+#### json 格式的执行计划
+
+!['./execution-plan.json'](execution-plan.json)
 
 #### 对应的可视化渲染结果（效果模拟图）
 
