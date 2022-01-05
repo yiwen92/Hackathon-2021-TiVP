@@ -151,17 +151,22 @@ A detailed description for each step in the implementation:
 Dashboard 前端解析返回的 JSON 数据，根据预设的字段类型和和图表的映射关系，渲染为图表。
 
 [@92hackers](https://github.com/92hackers) focus on frontend
+
 [@chrysan](https://github.com/chrysan) focus on backend
+
 [@Tammyxia](https://github.com/Tammyxia) focus on testing
+
 [@yiwen92](https://github.com/yiwen92) focus on project
 
 1st meeting note: Setup team, Sync-up idea
+
 Task:
 Preparation & investigation
 RFC draft
 Repo setup
 
 2nd meeting note：framework discussion, responsibility division
+
 Task:
 Frontend work & Backend work
 RFC commit & Org setup
