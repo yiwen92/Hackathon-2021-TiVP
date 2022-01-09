@@ -50,7 +50,7 @@ A precise statement of the proposed change:
 主要功能：
 - 收集和整理数据库侧必要信息，如执行计划（包括逻辑计划和物理计划）、各步骤运行耗时、访问信息（estRows 和 actRows）等
 - 将执行计划的算子和代价通过树状结构进行可视化展现，明确显示耗时最长或代价最大的执行路径
-- 集成于 TiDB 现有的管理工具 Dashboard，或以独立的可交互的展示界面就行演示
+- 集成于 TiDB 现有的管理工具 Dashboard，或以独立的可交互的展示界面进行演示
 
 未来扩展：
 - Optimize Trace？呈现优化器生成计划的逻辑
