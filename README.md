@@ -20,7 +20,8 @@ A short summary of the proposal:
 
 TiVP is a Visual Plan for TiDB SQL explaination integreted with Dashboard.
 该项目旨在可视化 TiDB 生成的执行计划。
-代码仓库 https://github.com/Hackathon-2022-TiVP
+
+代码仓库：https://github.com/Hackathon-2022-TiVP
 
 ## 背景&动机
 
