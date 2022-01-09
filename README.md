@@ -7,7 +7,7 @@ This is a template for TiDB's change proposal process, documented [here](./READM
 - Author(s): [@92hackers](https://github.com/92hackers), [@chrysan](https://github.com/chrysan), [@Tammyxia](https://github.com/Tammyxia), [@yiwen92](https://github.com/yiwen92) (in alphabetical order)
 - Last updated: 2022-01-05 <!-- Date -->
 - Discussion at: online meeting
-- Project at: https://github.com/yiwen92/TiDB-Hackathon-2021-TiVP
+- Project at: https://github.com/Hackathon-2022-TiVP
 
 ## 项目介绍
 
@@ -20,8 +20,6 @@ A short summary of the proposal:
 
 TiVP is a Visual Plan for TiDB SQL explaination integreted with Dashboard.
 该项目旨在可视化 TiDB 生成的执行计划。
-
-代码仓库：https://github.com/Hackathon-2022-TiVP
 
 ## 背景&动机
 
