@@ -252,6 +252,8 @@ A brief description on how the implementation will be tested. Both integration t
 - How will we know nothing broke?
 -->
 演示。
+Demo https://tidb-hackathon-pev2-d8qnp31ff-92hackers.vercel.app/
+Vedio https://mp.weixin.qq.com/s/reCnLs0e4IX9e8CgHBd0dA
 
 ## Open issues (if applicable)
 
